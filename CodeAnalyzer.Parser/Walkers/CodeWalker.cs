@@ -1,13 +1,13 @@
-using CodeAnalyzer.Collectors;
-using CodeAnalyzer.Collectors.Interfaces;
-using CodeAnalyzer.Models;
-using CodeAnalyzer.Models.Builders;
+using CodeAnalyzer.Core.Models;
+using CodeAnalyzer.Core.Models.Builders;
+using CodeAnalyzer.Parser.Collectors.Factories;
+using CodeAnalyzer.Parser.Collectors.Interfaces;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace CodeAnalyzer.Walkers;
+namespace CodeAnalyzer.Parser.Walkers;
 
-public class CodeWalker(ICollectorFactory collectorFactory) : CSharpSyntaxWalker
+internal sealed class CodeWalker(ICollectorFactory collectorFactory) : CSharpSyntaxWalker
 {
     private readonly ClassModelBuilder _classModelBuilder = new();
 

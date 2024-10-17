@@ -1,4 +1,4 @@
-namespace CodeAnalyzer.Models.Builders;
+namespace CodeAnalyzer.Core.Models.Builders;
 
 public class ClassModelBuilder
 {
@@ -19,6 +19,6 @@ public class ClassModelBuilder
 
     public ClassModel Build()
     {
-        return new ClassModel(_methods, _properties);
+        return new ClassModel(string.Empty, _methods, _properties);
     }
 }

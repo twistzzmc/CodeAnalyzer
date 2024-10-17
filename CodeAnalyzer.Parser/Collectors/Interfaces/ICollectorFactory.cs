@@ -1,11 +1,9 @@
-using CodeAnalyzer.Models;
-using CodeAnalyzer.Models.Interfaces;
-using Microsoft.CodeAnalysis.CSharp;
+using CodeAnalyzer.Core.Models;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace CodeAnalyzer.Collectors.Interfaces;
+namespace CodeAnalyzer.Parser.Collectors.Interfaces;
 
-public interface ICollectorFactory
+internal interface ICollectorFactory
 {
     ICollector<MethodModel, MethodDeclarationSyntax> CreateMethodCollector();
     

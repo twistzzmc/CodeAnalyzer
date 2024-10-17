@@ -1,4 +1,4 @@
-namespace CodeAnalyzer.Models.Interfaces;
+namespace CodeAnalyzer.Core.Models.Interfaces;
 
 public interface IModel
 {
