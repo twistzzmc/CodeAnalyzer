@@ -1,3 +1,5 @@
+using CodeAnalyzer.Core.Identifiers;
+
 namespace CodeAnalyzer.Core.Models.Builders;
 
 public class ClassModelBuilder
@@ -19,6 +21,6 @@ public class ClassModelBuilder
 
     public ClassModel Build()
     {
-        return new ClassModel(string.Empty, _methods, _properties);
+        return new ClassModel(IdentifierCreator.Create(), string.Empty, _methods, _properties);
     }
 }

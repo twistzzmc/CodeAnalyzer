@@ -1,5 +1,6 @@
 using CodeAnalyzer.Core.Models;
 using CodeAnalyzer.Core.Models.Builders;
+using CodeAnalyzer.Core.Warnings.Interfaces;
 using CodeAnalyzer.Parser.Collectors.Factories;
 using CodeAnalyzer.Parser.Collectors.Interfaces;
 using Microsoft.CodeAnalysis.CSharp;
@@ -11,8 +12,8 @@ internal sealed class CodeWalker(ICollectorFactory collectorFactory) : CSharpSyn
 {
     private readonly ClassModelBuilder _classModelBuilder = new();
 
-    public CodeWalker()
-        : this(new CollectorFactory())
+    public CodeWalker(IWarningRegistry warningRegistry)
+        : this(new CollectorFactory(warningRegistry))
     { }
 
     public ClassModel GetClassModel()
