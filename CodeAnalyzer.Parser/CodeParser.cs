@@ -14,7 +14,7 @@ public class CodeParser(IWarningRegistry warningRegistry)
         SyntaxTree tree = CSharpSyntaxTree.ParseText(code);
         CompilationUnitSyntax root = tree.GetCompilationUnitRoot();
         
-        CodeWalker walker = new(warningRegistry);
+        CodeWalker walker = new(warningRegistry, tree);
         walker.Visit(root);
 
         return walker.GetClassModel();

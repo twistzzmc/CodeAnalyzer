@@ -5,11 +5,14 @@ using CodeAnalyzer.Core.Warnings.Enums;
 using CodeAnalyzer.Core.Warnings.Interfaces;
 using CodeAnalyzer.Parser.Converters;
 using CodeAnalyzer.Parser.Guards;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.VisualBasic;
 
 namespace CodeAnalyzer.Parser.Collectors;
 
-internal sealed class MethodCollector(IWarningRegistry warningRegistry)
+internal sealed class MethodCollector(IWarningRegistry warningRegistry, SyntaxTree tree)
     : BaseCollector<MethodModel, MethodDeclarationSyntax>(warningRegistry)
 {
     private readonly AccessModifierConverter _accessModifierConverter = new(warningRegistry);
@@ -25,6 +28,36 @@ internal sealed class MethodCollector(IWarningRegistry warningRegistry)
         
         AccessModifierType modifier = _accessModifierConverter.Convert(node.Modifiers);
         ReturnType returnType = _returnTypeConverter.Convert(node.ReturnType);
-        return new MethodModel(CurrentModelIdentifier, node.Identifier.Text, modifier, returnType);
+        int startLine = node.GetLocation().GetLineSpan().StartLinePosition.Line;
+        int length = CalculateMethodLength(node);
+        int cyclomaticComplexity = CalculateCyclomaticComplexity(node);
+        
+        return new MethodModel(CurrentModelIdentifier, node.Identifier.Text, modifier, returnType, startLine, length,
+            cyclomaticComplexity);
+    }
+
+    static int CalculateCyclomaticComplexity(MethodDeclarationSyntax method)
+    {
+        int complexity = 1; // Startujemy od 1, bo każda metoda ma co najmniej jedną ścieżkę wykonania
+
+        // Instrukcje sterujące zwiększające złożoność
+        complexity += method.DescendantNodes().OfType<IfStatementSyntax>().Count();
+        complexity += method.DescendantNodes().OfType<ForStatementSyntax>().Count();
+        complexity += method.DescendantNodes().OfType<ForEachStatementSyntax>().Count();
+        complexity += method.DescendantNodes().OfType<WhileStatementSyntax>().Count();
+        complexity += method.DescendantNodes().OfType<DoStatementSyntax>().Count();
+        complexity += method.DescendantNodes().OfType<CaseSwitchLabelSyntax>().Count(); // Każdy case w switch
+        complexity += method.DescendantNodes().OfType<CatchClauseSyntax>().Count();
+        complexity += method.DescendantNodes().OfType<ConditionalExpressionSyntax>().Count(); // Warunek ternarny (x ? y : z)
+
+        return complexity;
+    }
+
+    private static int CalculateMethodLength(MethodDeclarationSyntax node)
+    {
+        int startLine = node.GetLocation().GetLineSpan().StartLinePosition.Line;
+        int endLine = node.GetLocation().GetLineSpan().EndLinePosition.Line;
+        
+        return endLine - startLine + 1;
     }
 }
