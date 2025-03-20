@@ -1,27 +1,22 @@
 using System;
-using System.Net;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.Logging;
 using CodeAnalyzer.Core.Warnings;
 using CodeAnalyzer.Core.Warnings.Interfaces;
-using CodeAnalyzer.UI.Controls;
 
 namespace CodeAnalyzer.UI;
 
 public partial class MainWindow : Window
 {
-    private readonly IWarningRegistry _warningRegistry;
-    
+    public IWarningRegistry WarningRegistry { get; }
+
     public MainWindow()
     {
         InitializeComponent();
         FilePicker.OnFileSelected += FilePickerControlOnOnFileSelected;
-        _warningRegistry = new WarningRegistry();
-        _warningRegistry.OnWarning += (_, data) => LogViewer.Log(data.ToString());
-        Analysis.WarningRegistry = _warningRegistry;
-        Analysis.FileProvider = FilePicker;
-        Analysis.Logger = LogViewer;
+        WarningRegistry = new WarningRegistry();
+        WarningRegistry.OnWarning += (_, data) => LogViewer.Log(data.ToString());
+        DataContext = this;
     }
 
     private void FilePickerControlOnOnFileSelected(object? sender, EventArgs e)
