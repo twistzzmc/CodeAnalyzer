@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeAnalyzer.Core", "CodeAn
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeAnalyzer.Parser", "CodeAnalyzer.Parser\CodeAnalyzer.Parser.csproj", "{D75ABA9E-9D1B-4AED-A6BB-91E52C7FE409}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeAnalyzer.UI", "CodeAnalyzer.UI\CodeAnalyzer.UI.csproj", "{C4C693A1-ED3E-4D75-8687-E72DE27534B6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{D75ABA9E-9D1B-4AED-A6BB-91E52C7FE409}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D75ABA9E-9D1B-4AED-A6BB-91E52C7FE409}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D75ABA9E-9D1B-4AED-A6BB-91E52C7FE409}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C4C693A1-ED3E-4D75-8687-E72DE27534B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4C693A1-ED3E-4D75-8687-E72DE27534B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4C693A1-ED3E-4D75-8687-E72DE27534B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4C693A1-ED3E-4D75-8687-E72DE27534B6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
