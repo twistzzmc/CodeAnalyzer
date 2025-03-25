@@ -23,9 +23,4 @@ public partial class MainWindow : Window
     {
         LogViewer.Log($"Wybrano plik: {FilePicker.SelectedFilePath}");
     }
-
-    private void OnAddTestLogClicked(object? sender, RoutedEventArgs e)
-    {
-        LogViewer.Log("To jest testowy log!");
-    }
 }
