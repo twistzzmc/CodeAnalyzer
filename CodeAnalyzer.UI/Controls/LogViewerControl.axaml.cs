@@ -19,6 +19,11 @@ public partial class LogViewerControl : UserControl, ILoggerUi
         LogTextBlock.Text += $"\n[{DateTime.Now}] {message}";
     }
 
+    public void Log()
+    {
+        LogTextBlock.Text += $"\n[{DateTime.Now}]";
+    }
+
     private void OnClearLogsClicked(object? sender, RoutedEventArgs e)
     {
         LogTextBlock.Text = "";

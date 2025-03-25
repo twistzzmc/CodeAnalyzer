@@ -1,10 +1,14 @@
+using System.Collections.Generic;
 using System.IO;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using CodeAnalyzer.Core.Analyzers;
+using CodeAnalyzer.Core.Analyzers.Dtos.Result;
 using CodeAnalyzer.Core.Models;
 using CodeAnalyzer.Core.Warnings.Interfaces;
 using CodeAnalyzer.Parser;
+using CodeAnalyzer.UI.AnalysisLoggers;
 using CodeAnalyzer.UI.Interfaces;
 
 namespace CodeAnalyzer.UI.Controls;
@@ -48,5 +52,10 @@ public partial class AnalysisControl : UserControl
         string code = File.ReadAllText(FileProvider.Provide());
         ClassModel model = CodeParser.Parse(WarningRegistry, code);
         Logger.Log(model.ToString());
+
+        MethodAnalyzer analyzer = new();
+        IEnumerable<MethodResultDto> results = analyzer.Analyze(model.Methods);
+        
+        MethodTooLongLogger.Log(Logger, results);
     }
 }
