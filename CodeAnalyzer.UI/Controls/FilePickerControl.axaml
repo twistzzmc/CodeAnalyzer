@@ -1,7 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="CodeAnalyzer.UI.Controls.FilePickerControl">
-    <StackPanel Spacing="10">
+    <StackPanel Spacing="10" Orientation="Horizontal" >
         <Button Content="Wybierz plik" Click="OnPickFileClicked"/>
+        <Button Content="Wybierz folder" Click="OnPickFolderClicked"/>
     </StackPanel>
 </UserControl>

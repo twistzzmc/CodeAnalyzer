@@ -13,13 +13,19 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        FilePicker.OnFileSelected += FilePickerControlOnOnFileSelected;
+        FilePicker.OnFileSelected += LogFilePath;
+        FilePicker.OnFolderSelected += LogFolderPath;
         WarningRegistry = new WarningRegistry();
         WarningRegistry.OnWarning += (_, data) => LogViewer.Log(data.ToString());
         DataContext = this;
     }
 
-    private void FilePickerControlOnOnFileSelected(object? sender, EventArgs e)
+    private void LogFolderPath(object? sender, EventArgs e)
+    {
+        LogViewer.Log($"Wybrano folder: {FilePicker.SelectedFolderPath}");
+    }
+
+    private void LogFilePath(object? sender, EventArgs e)
     {
         LogViewer.Log($"Wybrano plik: {FilePicker.SelectedFilePath}");
     }

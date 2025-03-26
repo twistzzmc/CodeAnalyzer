@@ -12,8 +12,10 @@ namespace CodeAnalyzer.UI.Controls;
 public partial class FilePickerControl : UserControl, IFileProvider
 {
     public event EventHandler? OnFileSelected;
+    public event EventHandler? OnFolderSelected;
     
     public string SelectedFilePath { get; private set; } = string.Empty;
+    public string SelectedFolderPath { get; private set; } = string.Empty;
 
     public FilePickerControl()
     {
@@ -30,6 +32,11 @@ public partial class FilePickerControl : UserControl, IFileProvider
         SelectFile();
     }
 
+    private void OnPickFolderClicked(object? sender, RoutedEventArgs e)
+    {
+        SelectFolder();
+    }
+
     private async Task SelectFile()
     {
         TopLevel? top = TopLevel.GetTopLevel(this);
@@ -42,7 +49,31 @@ public partial class FilePickerControl : UserControl, IFileProvider
         };
 
         IReadOnlyList<IStorageFile> files = await top.StorageProvider.OpenFilePickerAsync(options);
-        SelectedFilePath = files.Any() ? files[0].Path.LocalPath : string.Empty;
-        OnFileSelected?.Invoke(this, EventArgs.Empty);
+
+        if (files.Any())
+        {
+            SelectedFilePath = files[0].Path.LocalPath;
+            OnFileSelected?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    private async Task SelectFolder()
+    {
+        TopLevel? top = TopLevel.GetTopLevel(this);
+        if (top is null) return;
+
+        FolderPickerOpenOptions options = new()
+        {
+            Title = "Wbierz plik",
+            AllowMultiple = false
+        };
+        
+        IReadOnlyList<IStorageFolder> folders = await top.StorageProvider.OpenFolderPickerAsync(options);
+
+        if (folders.Any())
+        {
+            SelectedFolderPath = folders[0].Path.LocalPath;
+            OnFolderSelected?.Invoke(this, EventArgs.Empty);
+        }
     }
 }
