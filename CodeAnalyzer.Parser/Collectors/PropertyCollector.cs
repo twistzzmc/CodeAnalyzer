@@ -9,11 +9,15 @@ internal sealed class PropertyCollector(IWarningRegistry warningRegistry)
     : BaseCollector<PropertyModel, PropertyDeclarationSyntax>(warningRegistry)
 {
     protected override ModelType CollectorType => ModelType.Property;
-    
+
     protected override PropertyModel InnerCollect(PropertyDeclarationSyntax node)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(CurrentModelIdentifier);
+        ArgumentNullException.ThrowIfNull(CurrentModelIdentifier, nameof(CurrentModelIdentifier));
+        return new PropertyModel(CurrentModelIdentifier);
+    }
 
-        return new PropertyModel(CurrentModelIdentifier, node.Identifier.Text);
+    protected override string GetName(PropertyDeclarationSyntax node)
+    {
+        return node.Identifier.Text;
     }
 }

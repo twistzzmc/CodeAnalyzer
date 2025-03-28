@@ -5,4 +5,5 @@ public enum WarningType
     DuplicateAccessModifier,
     IncorrectAccessModifiers,
     UnknownModifier,
+    UnexpectedNamespaceMember
 }

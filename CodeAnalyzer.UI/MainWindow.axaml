@@ -10,10 +10,10 @@
         Title="CodeAnalyzer.UI">
     <Grid Margin="10" RowDefinitions="Auto,*" >
         <StackPanel Orientation="Vertical" Grid.Row="0" Spacing="5">
-            <controls:FilePickerControl x:Name="FilePicker" />
+            <controls:CodePickerControl x:Name="CodePicker" />
             <controls:AnalysisControl x:Name="Analysis"
                                       WarningRegistry="{Binding WarningRegistry}" 
-                                      FileProvider="{Binding #FilePicker}"
+                                      CodePathProvider="{Binding #CodePicker}"
                                       Logger="{Binding #LogViewer}" />
         </StackPanel>
         <controls:LogViewerControl x:Name="LogViewer" Grid.Row="1" />

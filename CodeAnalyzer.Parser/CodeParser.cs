@@ -1,4 +1,5 @@
 ﻿using CodeAnalyzer.Core.Models;
+using CodeAnalyzer.Core.Models.Builders;
 using CodeAnalyzer.Core.Warnings.Interfaces;
 using CodeAnalyzer.Parser.Walkers;
 using Microsoft.CodeAnalysis;
@@ -9,19 +10,34 @@ namespace CodeAnalyzer.Parser;
 
 public class CodeParser(IWarningRegistry warningRegistry)
 {
-    public ClassModel Parse(string code)
+    public IEnumerable<ClassModel> Parse(IEnumerable<string> codes)
+    {
+        ClassModelsBuilder builder = new();
+
+        foreach (string code in codes) Walk(code, builder);
+
+        return builder.Build();
+    }
+
+    public IEnumerable<ClassModel> Parse(string code)
+    {
+        return Walk(code).Builder.Build();
+    }
+
+    public static IEnumerable<ClassModel> Parse(IWarningRegistry warningRegistry, string code)
+    {
+        return new CodeParser(warningRegistry).Parse(code);
+    }
+
+    private CodeWalker Walk(string code, ClassModelsBuilder? builder = null)
     {
         SyntaxTree tree = CSharpSyntaxTree.ParseText(code);
         CompilationUnitSyntax root = tree.GetCompilationUnitRoot();
-        
+
         CodeWalker walker = new(warningRegistry, tree);
+        if (builder is not null) walker.Builder = builder;
+
         walker.Visit(root);
-
-        return walker.GetClassModel();
-    }
-
-    public static ClassModel Parse(IWarningRegistry warningRegistry, string code)
-    {
-        return new CodeParser(warningRegistry).Parse(code);
+        return walker;
     }
 }

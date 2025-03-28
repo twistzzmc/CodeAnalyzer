@@ -1,3 +1,4 @@
+using CodeAnalyzer.Core.Identifiers;
 using CodeAnalyzer.Core.Warnings.Data;
 using CodeAnalyzer.Core.Warnings.Enums;
 using CodeAnalyzer.Core.Warnings.Interfaces;
@@ -16,19 +17,17 @@ public sealed class WarningRegistry : IWarningRegistry
         WarningEventArgs warningEventArgs = new(type, message);
         OnWarningNeedsContext?.Invoke(this, warningEventArgs);
 
-        if (warningEventArgs.Id is null)
-        {
+        if (warningEventArgs.Identifier is null)
             throw new InvalidOperationException("Warning object data was not filled");
-        }
 
         WarningData warningData = warningEventArgs.ToData();
         OnWarning?.Invoke(this, warningData);
         Warnings.Add(warningData);
     }
 
-    public void RegisterWarning(string id, ModelType modelType, WarningType warningType, string message)
+    public void RegisterWarning(IdentifierDto identifier, ModelType modelType, WarningType warningType, string message)
     {
-        WarningData warningData = new(id, modelType, warningType, message);
+        WarningData warningData = new(identifier, modelType, warningType, message);
         OnWarning?.Invoke(this, warningData);
         Warnings.Add(warningData);
     }

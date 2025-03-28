@@ -1,3 +1,4 @@
+using CodeAnalyzer.Core.Identifiers;
 using CodeAnalyzer.Core.Models.Enums;
 using CodeAnalyzer.Core.Models.Interfaces;
 using CodeAnalyzer.Core.Models.SubModels;
@@ -5,16 +6,14 @@ using CodeAnalyzer.Core.Models.SubModels;
 namespace CodeAnalyzer.Core.Models;
 
 public class MethodModel(
-    string id,
-    string name,
+    IdentifierDto identifier,
     AccessModifierType accessModifierType,
     ReturnType returnType,
     int lineStart,
     int length,
     int cyclomaticComplexity) : IModel
 {
-    public string Id => id;
-    public string Name => name;
+    public IdentifierDto Identifier { get; } = identifier;
     public AccessModifierType AccessModifierType => accessModifierType;
     public ReturnType ReturnType => returnType;
     public int LineStart => lineStart;
@@ -23,7 +22,7 @@ public class MethodModel(
 
     public override string ToString()
     {
-        return $"[{Id}] {nameof(MethodModel)}({nameof(Name)}: {Name}, " +
+        return $"{nameof(MethodModel)} {Identifier}, " +
                $"{nameof(AccessModifierType)}: {AccessModifierType}, " +
                $"{nameof(ReturnType)}: {ReturnType}, " +
                $"{nameof(LineStart)}: {LineStart}, " +

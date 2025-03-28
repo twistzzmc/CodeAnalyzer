@@ -1,6 +1,8 @@
+using CodeAnalyzer.Core.Identifiers;
 using CodeAnalyzer.Core.Models;
 using CodeAnalyzer.Core.Models.Builders;
 using CodeAnalyzer.Core.Warnings.Interfaces;
+using CodeAnalyzer.Parser.Collectors.Creators;
 using CodeAnalyzer.Parser.Collectors.Factories;
 using CodeAnalyzer.Parser.Collectors.Interfaces;
 using Microsoft.CodeAnalysis;
@@ -11,28 +13,32 @@ namespace CodeAnalyzer.Parser.Walkers;
 
 internal sealed class CodeWalker(ICollectorFactory collectorFactory, SyntaxTree tree) : CSharpSyntaxWalker
 {
-    private readonly ClassModelBuilder _classModelBuilder = new();
+    private readonly IdentifierCreator _identifierCreator = new(collectorFactory.WarningRegistry);
+
+    public ClassModelsBuilder Builder { get; set; } = new();
 
     public CodeWalker(IWarningRegistry warningRegistry, SyntaxTree tree)
         : this(new CollectorFactory(warningRegistry), tree)
     { }
 
-    public ClassModel GetClassModel()
+    public override void VisitClassDeclaration(ClassDeclarationSyntax node)
     {
-        return _classModelBuilder.Build();
+        IdentifierDto classIdentifier = _identifierCreator.Create(node.Identifier.Text, node);
+        Builder.RegisterClass(classIdentifier);
+        base.VisitClassDeclaration(node);
     }
 
     public override void VisitMethodDeclaration(MethodDeclarationSyntax node)
     {
         MethodModel model = collectorFactory.CreateMethodCollector(tree).Collect(node);
-        _classModelBuilder.AddMethod(model);
+        Builder.RegisterMethod(model);
         base.VisitMethodDeclaration(node);
     }
 
     public override void VisitPropertyDeclaration(PropertyDeclarationSyntax node)
     {
         PropertyModel model = collectorFactory.CreatePropertyCollector().Collect(node);
-        _classModelBuilder.AddProperty(model);
+        Builder.RegisterProperty(model);
         base.VisitPropertyDeclaration(node);
     }
 }

@@ -1,15 +1,16 @@
+using CodeAnalyzer.Core.Identifiers;
 using CodeAnalyzer.Core.Models.Interfaces;
 
 namespace CodeAnalyzer.Core.Models;
 
-public class PropertyModel(string id, string name) : IModel
+public class PropertyModel(IdentifierDto identifier) : IModel
 {
-    public string Id => id;
-    public string Name => name;
+    public IdentifierDto Identifier { get; } = identifier;
+    
     public Type? Type { get; set; }
 
     public override string ToString()
     {
-        return $"[{Id}] {nameof(PropertyModel)}({Name})";
+        return $"{nameof(PropertyModel)} {Identifier}";
     }
 }

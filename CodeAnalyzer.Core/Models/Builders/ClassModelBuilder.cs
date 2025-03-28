@@ -6,6 +6,13 @@ public class ClassModelBuilder
 {
     private readonly List<MethodModel> _methods = [];
     private readonly List<PropertyModel> _properties = [];
+    private IdentifierDto? _identifier;
+
+    public ClassModelBuilder WithIdentifier(IdentifierDto identifier)
+    {
+        _identifier = identifier;
+        return this;
+    }
 
     public ClassModelBuilder AddMethod(MethodModel method)
     {
@@ -21,6 +28,7 @@ public class ClassModelBuilder
 
     public ClassModel Build()
     {
-        return new ClassModel(IdentifierCreator.Create(), string.Empty, _methods, _properties);
+        ArgumentNullException.ThrowIfNull(_identifier, nameof(_identifier));
+        return new ClassModel(_identifier, _methods, _properties);
     }
 }

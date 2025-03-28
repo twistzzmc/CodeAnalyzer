@@ -44,7 +44,7 @@ internal sealed class MethodTooLongLogger(ILoggerUi logger)
     private void LogProblem(MethodResultDto result)
     {
         MethodModel method = result.Model;
-        _logger.Log($"Metoda {method.Name} jest za duża (linia: {method.LineStart}).");
+        _logger.Log($"Metoda {method.Identifier.Name} jest za duża (linia: {method.LineStart}).");
         _logger.Log($"\t Liczba linii: {method.Length}");
         _logger.Log($"\t Złożoność cyklometryczna: {method.CyclomaticComplexity}");
         _logger.Log("\t Zaleca się podzielić metode na kilka mniejszych");
@@ -54,7 +54,7 @@ internal sealed class MethodTooLongLogger(ILoggerUi logger)
     private void LogWarning(MethodResultDto result)
     {
         MethodModel method = result.Model;
-        _logger.Log($"Metoda {method.Name} może być za duża (linia: {method.LineStart}).");
+        _logger.Log($"Metoda {method.Identifier.Name} może być za duża (linia: {method.LineStart}).");
         _logger.Log($"\t Liczba linii: {method.Length}");
         _logger.Log($"\t Złożoność cyklometryczna: {method.CyclomaticComplexity}");
         _logger.Log("\t Podzielenie metody może pozytywnie wpłynąć na czytelność kodu");

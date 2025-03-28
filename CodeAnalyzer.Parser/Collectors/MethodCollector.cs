@@ -6,9 +6,7 @@ using CodeAnalyzer.Core.Warnings.Interfaces;
 using CodeAnalyzer.Parser.Converters;
 using CodeAnalyzer.Parser.Guards;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.VisualBasic;
 
 namespace CodeAnalyzer.Parser.Collectors;
 
@@ -22,21 +20,30 @@ internal sealed class MethodCollector(IWarningRegistry warningRegistry, SyntaxTr
 
     protected override MethodModel InnerCollect(MethodDeclarationSyntax node)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(CurrentModelIdentifier);
-        
+        ArgumentNullException.ThrowIfNull(CurrentModelIdentifier, nameof(CurrentModelIdentifier));
         ModifierGuard.GuardAgainstUnknown(warningRegistry, node.Modifiers.Select(m => m.Text));
-        
+
         AccessModifierType modifier = _accessModifierConverter.Convert(node.Modifiers);
         ReturnType returnType = _returnTypeConverter.Convert(node.ReturnType);
         int startLine = node.GetLocation().GetLineSpan().StartLinePosition.Line;
         int length = CalculateMethodLength(node);
         int cyclomaticComplexity = CalculateCyclomaticComplexity(node);
-        
-        return new MethodModel(CurrentModelIdentifier, node.Identifier.Text, modifier, returnType, startLine, length,
+
+        return new MethodModel(
+            CurrentModelIdentifier,
+            modifier,
+            returnType,
+            startLine,
+            length,
             cyclomaticComplexity);
     }
 
-    static int CalculateCyclomaticComplexity(MethodDeclarationSyntax method)
+    protected override string GetName(MethodDeclarationSyntax node)
+    {
+        return node.Identifier.Text;
+    }
+
+    private static int CalculateCyclomaticComplexity(MethodDeclarationSyntax method)
     {
         int complexity = 1; // Startujemy od 1, bo każda metoda ma co najmniej jedną ścieżkę wykonania
 
@@ -48,7 +55,8 @@ internal sealed class MethodCollector(IWarningRegistry warningRegistry, SyntaxTr
         complexity += method.DescendantNodes().OfType<DoStatementSyntax>().Count();
         complexity += method.DescendantNodes().OfType<CaseSwitchLabelSyntax>().Count(); // Każdy case w switch
         complexity += method.DescendantNodes().OfType<CatchClauseSyntax>().Count();
-        complexity += method.DescendantNodes().OfType<ConditionalExpressionSyntax>().Count(); // Warunek ternarny (x ? y : z)
+        complexity +=
+            method.DescendantNodes().OfType<ConditionalExpressionSyntax>().Count(); // Warunek ternarny (x ? y : z)
 
         return complexity;
     }
@@ -57,7 +65,7 @@ internal sealed class MethodCollector(IWarningRegistry warningRegistry, SyntaxTr
     {
         int startLine = node.GetLocation().GetLineSpan().StartLinePosition.Line;
         int endLine = node.GetLocation().GetLineSpan().EndLinePosition.Line;
-        
+
         return endLine - startLine + 1;
     }
 }

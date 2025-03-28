@@ -13,8 +13,9 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        FilePicker.OnFileSelected += LogFilePath;
-        FilePicker.OnFolderSelected += LogFolderPath;
+        CodePicker.OnFileSelected += LogCodeFilesPath;
+        CodePicker.OnFolderSelected += LogFolderPath;
+        CodePicker.OnError += (_, exception) => LogViewer.Log(exception);
         WarningRegistry = new WarningRegistry();
         WarningRegistry.OnWarning += (_, data) => LogViewer.Log(data.ToString());
         DataContext = this;
@@ -22,11 +23,11 @@ public partial class MainWindow : Window
 
     private void LogFolderPath(object? sender, EventArgs e)
     {
-        LogViewer.Log($"Wybrano folder: {FilePicker.SelectedFolderPath}");
+        LogViewer.Log($"Wybrano folder: {CodePicker.SelectedFolderPath}");
     }
 
-    private void LogFilePath(object? sender, EventArgs e)
+    private void LogCodeFilesPath(object? sender, EventArgs e)
     {
-        LogViewer.Log($"Wybrano plik: {FilePicker.SelectedFilePath}");
+        LogViewer.Log($"Wybrano plik: {CodePicker.SelectedFilePath}");
     }
 }

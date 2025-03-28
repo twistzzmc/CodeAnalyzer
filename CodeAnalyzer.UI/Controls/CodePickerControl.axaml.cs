@@ -9,32 +9,54 @@ using CodeAnalyzer.UI.Interfaces;
 
 namespace CodeAnalyzer.UI.Controls;
 
-public partial class FilePickerControl : UserControl, IFileProvider
+public partial class CodePickerControl : UserControl, ICodePathProvider, IAsyncErrorThrower
 {
-    public event EventHandler? OnFileSelected;
-    public event EventHandler? OnFolderSelected;
-    
     public string SelectedFilePath { get; private set; } = string.Empty;
     public string SelectedFolderPath { get; private set; } = string.Empty;
 
-    public FilePickerControl()
+    public CodePickerControl()
     {
         InitializeComponent();
     }
 
-    public string Provide()
+    public event EventHandler<Exception>? OnError;
+
+    public string ProvideFile()
     {
         return SelectedFilePath;
     }
 
-    private void OnPickFileClicked(object? sender, RoutedEventArgs e)
+    public string ProvideFolder()
     {
-        SelectFile();
+        return SelectedFolderPath;
     }
 
-    private void OnPickFolderClicked(object? sender, RoutedEventArgs e)
+    public event EventHandler? OnFileSelected;
+    public event EventHandler? OnFolderSelected;
+
+    private async void OnPickFileClicked(object? sender, RoutedEventArgs e)
     {
-        SelectFolder();
+        try
+        {
+            await SelectFile();
+            SelectedFilePath = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            OnError?.Invoke(this, ex);
+        }
+    }
+
+    private async void OnPickFolderClicked(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            await SelectFolder();
+        }
+        catch (Exception ex)
+        {
+            OnError?.Invoke(this, ex);
+        }
     }
 
     private async Task SelectFile()
@@ -53,6 +75,7 @@ public partial class FilePickerControl : UserControl, IFileProvider
         if (files.Any())
         {
             SelectedFilePath = files[0].Path.LocalPath;
+            SelectedFolderPath = string.Empty;
             OnFileSelected?.Invoke(this, EventArgs.Empty);
         }
     }
@@ -67,12 +90,13 @@ public partial class FilePickerControl : UserControl, IFileProvider
             Title = "Wbierz plik",
             AllowMultiple = false
         };
-        
+
         IReadOnlyList<IStorageFolder> folders = await top.StorageProvider.OpenFolderPickerAsync(options);
 
         if (folders.Any())
         {
             SelectedFolderPath = folders[0].Path.LocalPath;
+            SelectedFilePath = string.Empty;
             OnFolderSelected?.Invoke(this, EventArgs.Empty);
         }
     }

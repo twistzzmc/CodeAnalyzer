@@ -1,5 +1,8 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -18,8 +21,8 @@ public partial class AnalysisControl : UserControl
     public static readonly StyledProperty<IWarningRegistry> WarningRegistryProperty =
         AvaloniaProperty.Register<AnalysisControl, IWarningRegistry>(nameof(WarningRegistry));
 
-    public static readonly StyledProperty<IFileProvider> FileProviderProperty =
-        AvaloniaProperty.Register<AnalysisControl, IFileProvider>(nameof(FileProvider));
+    public static readonly StyledProperty<ICodePathProvider> CodePathProviderProperty =
+        AvaloniaProperty.Register<AnalysisControl, ICodePathProvider>(nameof(CodePathProvider));
 
     public static readonly StyledProperty<ILoggerUi> LoggerProperty =
         AvaloniaProperty.Register<AnalysisControl, ILoggerUi>(nameof(Logger));
@@ -30,10 +33,10 @@ public partial class AnalysisControl : UserControl
         set => SetValue(WarningRegistryProperty, value);
     }
 
-    public IFileProvider FileProvider
+    public ICodePathProvider CodePathProvider
     {
-        get => GetValue(FileProviderProperty);
-        set => SetValue(FileProviderProperty, value);
+        get => GetValue(CodePathProviderProperty);
+        set => SetValue(CodePathProviderProperty, value);
     }
 
     public ILoggerUi Logger
@@ -49,13 +52,73 @@ public partial class AnalysisControl : UserControl
 
     private void AnalyzeTooLongMethods_OnClick(object? sender, RoutedEventArgs e)
     {
-        string code = File.ReadAllText(FileProvider.Provide());
-        ClassModel model = CodeParser.Parse(WarningRegistry, code);
-        Logger.Log(model.ToString());
+        try
+        {
+            foreach (ClassModel model in Parse())
+            {
+                Logger.Log(model.ToString());
 
-        MethodAnalyzer analyzer = new();
-        IEnumerable<MethodResultDto> results = analyzer.Analyze(model.Methods);
+                MethodAnalyzer analyzer = new();
+                IEnumerable<MethodResultDto> results = analyzer.Analyze(model.Methods);
+
+                MethodTooLongLogger.Log(Logger, results);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.Log(ex);
+        }
+    }
+
+    private IEnumerable<ClassModel> Parse()
+    {
+        if (TryParseFile(out IEnumerable<ClassModel> fileModels))
+        {
+            return fileModels;
+        }
+
+        return TryParseFolder(out IEnumerable<ClassModel> folderModels)
+            ? folderModels
+            : [];
+    } 
+
+    private bool TryParseFile(out IEnumerable<ClassModel> models)
+    {
+        string filePath = CodePathProvider.ProvideFile();
+
+        if (string.IsNullOrEmpty(filePath))
+        {
+            models = [];
+            return false;
+        }
         
-        MethodTooLongLogger.Log(Logger, results);
+        string code = File.ReadAllText(filePath);
+        models = CodeParser.Parse(WarningRegistry, code);
+        return true;
+    }
+
+    private bool TryParseFolder(out IEnumerable<ClassModel> models)
+    {
+        string[] excludedFolders = ["obj", "bin", "Tests", "Generated"];
+        string folderPath = CodePathProvider.ProvideFolder();
+        models = [];
+
+        if (string.IsNullOrEmpty(folderPath))
+        {
+            return false;
+        }
+        
+        string[] files = Directory.GetFiles(folderPath, "*.cs", SearchOption.AllDirectories)
+            .Where(path => !excludedFolders.Any(folder =>
+                    path.Split(Path.DirectorySeparatorChar)
+                        .Contains(folder)))
+            .ToArray();
+        
+        foreach (string file in files)
+        {
+            models = CodeParser.Parse(WarningRegistry, file);
+        }
+        
+        return true;
     }
 }
