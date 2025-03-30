@@ -39,7 +39,6 @@ public partial class CodePickerControl : UserControl, ICodePathProvider, IAsyncE
         try
         {
             await SelectFile();
-            SelectedFilePath = string.Empty;
         }
         catch (Exception ex)
         {

@@ -113,12 +113,9 @@ public partial class AnalysisControl : UserControl
                     path.Split(Path.DirectorySeparatorChar)
                         .Contains(folder)))
             .ToArray();
-        
-        foreach (string file in files)
-        {
-            models = CodeParser.Parse(WarningRegistry, file);
-        }
-        
+
+        IEnumerable<string> codes = files.Select(File.ReadAllText);
+        models = CodeParser.Parse(WarningRegistry, codes);
         return true;
     }
 }

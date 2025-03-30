@@ -29,6 +29,11 @@ public class CodeParser(IWarningRegistry warningRegistry)
         return new CodeParser(warningRegistry).Parse(code);
     }
 
+    public static IEnumerable<ClassModel> Parse(IWarningRegistry warningRegistry, IEnumerable<string> codes)
+    {
+        return new CodeParser(warningRegistry).Parse(codes);
+    }
+
     private CodeWalker Walk(string code, ClassModelsBuilder? builder = null)
     {
         SyntaxTree tree = CSharpSyntaxTree.ParseText(code);
