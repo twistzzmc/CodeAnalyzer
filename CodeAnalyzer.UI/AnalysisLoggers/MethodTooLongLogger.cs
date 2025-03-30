@@ -4,13 +4,14 @@ using CodeAnalyzer.Core.Analyzers.Dtos.Result;
 using CodeAnalyzer.Core.Analyzers.Enums;
 using CodeAnalyzer.Core.Models;
 using CodeAnalyzer.UI.Interfaces;
+using CodeAnalyzer.UI.LoggerUi.Builders;
+using CodeAnalyzer.UI.LoggerUi.Dtos;
+using CodeAnalyzer.UI.LoggerUi.Interfaces;
 
 namespace CodeAnalyzer.UI.AnalysisLoggers;
 
 internal sealed class MethodTooLongLogger(ILoggerUi logger)
 {
-    private readonly ILoggerUi _logger = logger;
-
     public void Log(IEnumerable<MethodResultDto> results)
     {
         List<MethodResultDto> resultList = results
@@ -20,11 +21,11 @@ internal sealed class MethodTooLongLogger(ILoggerUi logger)
         
         if (resultList.Count == 0)
         {
-            _logger.Log("Nie znaleziono zbyt długich metod");
+            logger.Log("Nie znaleziono zbyt długich metod");
             return;
         }
         
-        _logger.Log("Znalezione metody, które są zbyt długie:");
+        logger.Log("Znalezione metody, które są zbyt długie:");
         resultList
             .Where(result => result.Certainty == IssueCertainty.Problem)
             .ToList()
@@ -44,20 +45,24 @@ internal sealed class MethodTooLongLogger(ILoggerUi logger)
     private void LogProblem(MethodResultDto result)
     {
         MethodModel method = result.Model;
-        _logger.Log($"Metoda {method.Identifier.Name} jest za duża (linia: {method.LineStart}).");
-        _logger.Log($"\t Liczba linii: {method.Length}");
-        _logger.Log($"\t Złożoność cyklometryczna: {method.CyclomaticComplexity}");
-        _logger.Log("\t Zaleca się podzielić metode na kilka mniejszych");
-        _logger.Log();
+        LogEntry log = new SimpleLogEntryBuilder($"Metoda {method.Identifier.FullName} jest za duża")
+                .WithChild($"Początkowa linia: {method.LineStart}")
+                .WithChild($"Liczba linii: {method.Length}")
+                .WithChild("Złożoność cyklometryczna: {method.CyclomaticComplexity}")
+                .WithChild("Zaleca się podzielić metode na kilka mniejszych")
+                .Build();
+        logger.Log(log);
     }
 
     private void LogWarning(MethodResultDto result)
     {
         MethodModel method = result.Model;
-        _logger.Log($"Metoda {method.Identifier.Name} może być za duża (linia: {method.LineStart}).");
-        _logger.Log($"\t Liczba linii: {method.Length}");
-        _logger.Log($"\t Złożoność cyklometryczna: {method.CyclomaticComplexity}");
-        _logger.Log("\t Podzielenie metody może pozytywnie wpłynąć na czytelność kodu");
-        _logger.Log();
+        LogEntry log = new SimpleLogEntryBuilder($"Metoda {method.Identifier.FullName} może być za duża")
+            .WithChild($"Początkowa linia: {method.LineStart}")
+            .WithChild($"Liczba linii: {method.Length}")
+            .WithChild("Złożoność cyklometryczna: {method.CyclomaticComplexity}")
+            .WithChild("Podzielenie metody może pozytywnie wpłynąć na czytelność kodu")
+            .Build();
+        logger.Log(log);
     }
 }

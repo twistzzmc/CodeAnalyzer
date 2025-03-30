@@ -10,6 +10,6 @@ public sealed class IdentifierDto(string guid, string name, IEnumerable<Namespac
 
     public override string ToString()
     {
-        return $"[{Guid}] [{NamespaceText}] {Name}";
+        return $"[{NamespaceText}] {Name}";
     }
 }

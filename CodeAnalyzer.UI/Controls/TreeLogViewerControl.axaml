@@ -1,0 +1,24 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:CodeAnalyzer.UI.Controls.TreeLogViewer"
+             xmlns:dtos="clr-namespace:CodeAnalyzer.UI.LoggerUi.Dtos"
+             xmlns:controls="clr-namespace:CodeAnalyzer.UI.Controls"
+             mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="400"
+             x:Class="CodeAnalyzer.UI.Controls.TreeLogViewerControl"
+             x:DataType="controls:TreeLogViewerControl">
+    <Grid RowDefinitions="Auto,*,Auto">
+        <TextBlock Text="Logi aplikacji:" FontWeight="Bold" Grid.Row="0" />
+        <TreeView ItemsSource="{Binding Entries}" Grid.Row="1">
+            <TreeView.DataTemplates>
+                <TreeDataTemplate
+                    DataType="{x:Type dtos:LogEntry}"
+                    ItemsSource="{Binding Children}">
+                    <TextBlock Text="{Binding Title}" />
+                </TreeDataTemplate>
+            </TreeView.DataTemplates>
+        </TreeView>
+        <Button Content="Wyczyść logi" Click="OnClearLogsClicked" Grid.Row="2"/>
+    </Grid>
+</UserControl>

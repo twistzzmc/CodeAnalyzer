@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,6 +12,8 @@ using CodeAnalyzer.Core.Warnings.Interfaces;
 using CodeAnalyzer.Parser;
 using CodeAnalyzer.UI.AnalysisLoggers;
 using CodeAnalyzer.UI.Interfaces;
+using CodeAnalyzer.UI.LoggerUi.Builders.ModelEntryBuilders;
+using CodeAnalyzer.UI.LoggerUi.Interfaces;
 
 namespace CodeAnalyzer.UI.Controls;
 
@@ -56,7 +57,7 @@ public partial class AnalysisControl : UserControl
         {
             foreach (ClassModel model in Parse())
             {
-                Logger.Log(model.ToString());
+                Logger.Log(new ClassEntryBuilder().Build(model));
 
                 MethodAnalyzer analyzer = new();
                 IEnumerable<MethodResultDto> results = analyzer.Analyze(model.Methods);

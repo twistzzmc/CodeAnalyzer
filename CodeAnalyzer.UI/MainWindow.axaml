@@ -16,6 +16,6 @@
                                       CodePathProvider="{Binding #CodePicker}"
                                       Logger="{Binding #LogViewer}" />
         </StackPanel>
-        <controls:LogViewerControl x:Name="LogViewer" Grid.Row="1" />
+        <controls:TreeLogViewerControl x:Name="LogViewer" Grid.Row="1" />
     </Grid>
 </Window>
