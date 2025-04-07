@@ -2,6 +2,7 @@ using CodeAnalyzer.Core.Models;
 using CodeAnalyzer.Core.Warnings.Interfaces;
 using CodeAnalyzer.Parser.Collectors.Interfaces;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace CodeAnalyzer.Parser.Collectors.Factories;
@@ -10,9 +11,9 @@ internal sealed class CollectorFactory(IWarningRegistry warningRegistry) : IColl
 {
     public IWarningRegistry WarningRegistry { get; } = warningRegistry;
 
-    public ICollector<MethodModel, MethodDeclarationSyntax> CreateMethodCollector(SyntaxTree tree)
+    public ICollector<MethodModel, MethodDeclarationSyntax> CreateMethodCollector(CSharpCompilation compilation)
     {
-        return new MethodCollector(WarningRegistry, tree);
+        return new MethodCollector(WarningRegistry, compilation);
     }
 
     public ICollector<PropertyModel, PropertyDeclarationSyntax> CreatePropertyCollector()

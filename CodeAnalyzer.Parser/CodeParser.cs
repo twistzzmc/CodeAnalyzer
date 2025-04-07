@@ -12,16 +12,12 @@ public class CodeParser(IWarningRegistry warningRegistry)
 {
     public IEnumerable<ClassModel> Parse(IEnumerable<string> codes)
     {
-        ClassModelsBuilder builder = new();
-
-        foreach (string code in codes) Walk(code, builder);
-
-        return builder.Build();
+        return Walk(Compile(codes));
     }
 
     public IEnumerable<ClassModel> Parse(string code)
     {
-        return Walk(code).Builder.Build();
+        return Walk(Compile([code]));
     }
 
     public static IEnumerable<ClassModel> Parse(IWarningRegistry warningRegistry, string code)
@@ -34,15 +30,29 @@ public class CodeParser(IWarningRegistry warningRegistry)
         return new CodeParser(warningRegistry).Parse(codes);
     }
 
-    private CodeWalker Walk(string code, ClassModelsBuilder? builder = null)
+    private IEnumerable<ClassModel> Walk(CSharpCompilation compilation)
     {
-        SyntaxTree tree = CSharpSyntaxTree.ParseText(code);
-        CompilationUnitSyntax root = tree.GetCompilationUnitRoot();
+        CodeWalker walker = new(warningRegistry, compilation);
 
-        CodeWalker walker = new(warningRegistry, tree);
-        if (builder is not null) walker.Builder = builder;
+        foreach (SyntaxTree tree in compilation.SyntaxTrees)
+        {
+            walker.Visit(tree.GetRoot());
+        }
+        
+        return walker.CollectClassModels();
+    }
 
-        walker.Visit(root);
-        return walker;
+    private CSharpCompilation Compile(IEnumerable<string> codes)
+    {
+        List<SyntaxTree> syntaxTrees = codes.Select(code => CSharpSyntaxTree.ParseText(code)).ToList();
+
+        IEnumerable<PortableExecutableReference> references = AppDomain.CurrentDomain
+            .GetAssemblies()
+            .Where(a => !a.IsDynamic && !string.IsNullOrWhiteSpace(a.Location))
+            .Select(a => MetadataReference.CreateFromFile(a.Location));
+        
+        return CSharpCompilation.Create("FullAnalysis")
+            .AddSyntaxTrees(syntaxTrees)
+            .AddReferences(references);
     }
 }

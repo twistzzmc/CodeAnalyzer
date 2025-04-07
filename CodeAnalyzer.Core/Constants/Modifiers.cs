@@ -12,4 +12,5 @@ public static class Modifiers
     public const string FINAL = "final";
     public const string VIRTUAL = "virtual";
     public const string ABSTRACT = "abstract";
+    public const string OVERRIDE = "override";
 }

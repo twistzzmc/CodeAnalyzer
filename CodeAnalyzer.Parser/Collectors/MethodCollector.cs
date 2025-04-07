@@ -6,11 +6,13 @@ using CodeAnalyzer.Core.Warnings.Interfaces;
 using CodeAnalyzer.Parser.Converters;
 using CodeAnalyzer.Parser.Guards;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.FlowAnalysis;
 
 namespace CodeAnalyzer.Parser.Collectors;
 
-internal sealed class MethodCollector(IWarningRegistry warningRegistry, SyntaxTree tree)
+internal sealed class MethodCollector(IWarningRegistry warningRegistry, CSharpCompilation compilation)
     : BaseCollector<MethodModel, MethodDeclarationSyntax>(warningRegistry)
 {
     private readonly AccessModifierConverter _accessModifierConverter = new(warningRegistry);
@@ -43,22 +45,50 @@ internal sealed class MethodCollector(IWarningRegistry warningRegistry, SyntaxTr
         return node.Identifier.Text;
     }
 
-    private static int CalculateCyclomaticComplexity(MethodDeclarationSyntax method)
+    private int CalculateCyclomaticComplexity(MethodDeclarationSyntax method)
     {
-        int complexity = 1; // Startujemy od 1, bo każda metoda ma co najmniej jedną ścieżkę wykonania
+        SemanticModel semanticModel = compilation.GetSemanticModel(method.SyntaxTree);
+        try
+        {
+            ControlFlowGraph? cfg = ControlFlowGraph.Create(method, semanticModel);
+            if (cfg is null)
+            {
+                IMethodSymbol? methodSymbol = semanticModel.GetDeclaredSymbol(method);
+                INamedTypeSymbol? containingType = methodSymbol?.ContainingType;
+                if (containingType?.TypeKind == TypeKind.Interface)
+                {
+                    // Metoda interfejsu ma złożoność równą 0 i brak grafu
+                    return 0;
+                }
 
-        // Instrukcje sterujące zwiększające złożoność
-        complexity += method.DescendantNodes().OfType<IfStatementSyntax>().Count();
-        complexity += method.DescendantNodes().OfType<ForStatementSyntax>().Count();
-        complexity += method.DescendantNodes().OfType<ForEachStatementSyntax>().Count();
-        complexity += method.DescendantNodes().OfType<WhileStatementSyntax>().Count();
-        complexity += method.DescendantNodes().OfType<DoStatementSyntax>().Count();
-        complexity += method.DescendantNodes().OfType<CaseSwitchLabelSyntax>().Count(); // Każdy case w switch
-        complexity += method.DescendantNodes().OfType<CatchClauseSyntax>().Count();
-        complexity +=
-            method.DescendantNodes().OfType<ConditionalExpressionSyntax>().Count(); // Warunek ternarny (x ? y : z)
+                if (methodSymbol?.IsAbstract == true)
+                {
+                    // Metoda abstrakcyjna nie musi mieć implementacji
+                    return 0;
+                }
+                
+                warningRegistry.RegisterWarning(WarningType.CyclomaticComplexity, 
+                    "Nie udało się zbydować ControlFlowGraph");
+                return 0;
+            }
 
-        return complexity;
+            int edges = 0;
+            foreach (BasicBlock block in cfg.Blocks)
+            {
+                if (block.FallThroughSuccessor is not null) edges++;
+                if (block.ConditionalSuccessor is not null) edges++;
+            }
+            
+            int nodes = cfg.Blocks.Length;
+            int complexity = edges - nodes + 2;
+            return complexity;
+        }
+        catch (Exception ex)
+        {
+            warningRegistry.RegisterWarning(WarningType.CyclomaticComplexity,
+                $"Nie udało się zbydować ControlFlowGraph z powodu wyjątku: {ex.Message}");
+            return 0;
+        }
     }
 
     private static int CalculateMethodLength(MethodDeclarationSyntax node)

@@ -16,7 +16,8 @@ public sealed class ModifierGuard(IWarningRegistry warningRegistry)
         Modifiers.FINAL,
         Modifiers.ASYNC,
         Modifiers.VIRTUAL,
-        Modifiers.ABSTRACT
+        Modifiers.ABSTRACT,
+        Modifiers.OVERRIDE
     });
 
     public void GuardAgainstUnknown(IEnumerable<string> modifiers)
@@ -38,8 +39,8 @@ public sealed class ModifierGuard(IWarningRegistry warningRegistry)
             return;
         }
         
-        warningRegistry.RegisterWarning(WarningType.UnknownModifier,
-            $"Found unknown modifier '{string.Join(", ", unknownModifiers)}'");
+        warningRegistry.RegisterWarning(WarningType.MethodModifier,
+            $"Znaleziono nieznany modyfikator '{string.Join(", ", unknownModifiers)}'");
     }
 
     public static void GuardAgainstUnknown(IWarningRegistry warningRegistry, IEnumerable<string> modifiers)

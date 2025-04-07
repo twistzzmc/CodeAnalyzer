@@ -38,10 +38,16 @@ public sealed class IdentifierCreator(IWarningRegistry warningRegistry)
                 case FileScopedNamespaceDeclarationSyntax fileScopedNamespaceDeclaration:
                     AppendNamespace(fileScopedNamespaceDeclaration);
                     break;
+                case InterfaceDeclarationSyntax interfaceDeclaration:
+                    AppendInterface(interfaceDeclaration);
+                    break;
+                case CompilationUnitSyntax:
+                    // Korzeń pliku, do zignorowania
+                    break;
 
                 default:
-                    warningRegistry.RegisterWarning(
-                        identifier, node.ToModelType(), WarningType.UnexpectedNamespaceMember, current.GetType().Name);
+                    warningRegistry.RegisterWarning(identifier, node.ToModelType(), WarningType.Namespace,
+                        $"Niespodziewany rodzaj namespace: {current.GetType().Name}");
                     break;
             }
         }
@@ -67,6 +73,11 @@ public sealed class IdentifierCreator(IWarningRegistry warningRegistry)
     private void AppendNamespace(BaseNamespaceDeclarationSyntax namespaceDeclaration)
     {
         Add(NamespacePartDto.FromPure(namespaceDeclaration.Name.ToString()));
+    }
+
+    private void AppendInterface(InterfaceDeclarationSyntax interfaceDeclaration)
+    {
+        Add(NamespacePartDto.FromPure(interfaceDeclaration.Identifier.ToString()));
     }
 
     private void Add(NamespacePartDto partDto)

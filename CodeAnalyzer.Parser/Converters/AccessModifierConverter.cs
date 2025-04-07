@@ -85,6 +85,11 @@ public sealed class AccessModifierConverter(IWarningRegistry warningRegistry)
         {
             return AccessModifierType.Private;
         }
+
+        if (!_isPrivate && !_isPublic && !_isProtected && !_isInternal)
+        {
+            return AccessModifierType.None;
+        }
         
         RegisterIncorrectModifiersWarning(_modifiers.ToArray());
         return AccessModifierType.Unknown;
@@ -111,14 +116,14 @@ public sealed class AccessModifierConverter(IWarningRegistry warningRegistry)
 
     private void RegisterDuplicateModifierWarning(string duplicateModifier)
     {
-        warningRegistry.RegisterWarning(WarningType.DuplicateAccessModifier,
-            $"Found duplicate access modifier '{duplicateModifier}'");
+        warningRegistry.RegisterWarning(WarningType.MethodModifier,
+            $"Znaleziono duplikat: '{duplicateModifier}'");
     }
 
     private void RegisterIncorrectModifiersWarning(params string[] incorrectModifiers)
     {
-        warningRegistry.RegisterWarning(WarningType.IncorrectAccessModifiers,
-            $"Found incorrect pairing of access modifiers '{string.Join(", ", incorrectModifiers)}'");
+        warningRegistry.RegisterWarning(WarningType.MethodModifier,
+            $"Znaleziono niespodziewane parowanie modyfikatorów: '{string.Join(", ", incorrectModifiers)}'");
     }
 
     private static bool Compare(string expectedModifier, string modifier)
