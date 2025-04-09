@@ -58,4 +58,9 @@ public sealed class NamespacePartDto
     {
         return new NamespacePartDto(value, false, false, false, true, false, isPartial);
     }
+
+    public static NamespacePartDto FromBlock(string value)
+    {
+        return new NamespacePartDto(value, false, false, false, true, false, false);
+    }
 }

@@ -3,6 +3,7 @@ using CodeAnalyzer.Core.Models.Enums;
 using CodeAnalyzer.Core.Models.SubModels;
 using CodeAnalyzer.Core.Warnings.Enums;
 using CodeAnalyzer.Core.Warnings.Interfaces;
+using CodeAnalyzer.Parser.Collectors.Creators;
 using CodeAnalyzer.Parser.Converters;
 using CodeAnalyzer.Parser.Guards;
 using Microsoft.CodeAnalysis;
@@ -16,6 +17,7 @@ internal sealed class MethodCollector(IWarningRegistry warningRegistry, CSharpCo
     : BaseCollector<MethodModel, MethodDeclarationSyntax>(warningRegistry)
 {
     private readonly AccessModifierConverter _accessModifierConverter = new(warningRegistry);
+    private readonly NamespaceCreator _namespaceCreator = new(warningRegistry) { ExpectNonNamespaceDeclarations = true };
     private readonly ReturnTypeConverter _returnTypeConverter = new();
 
     protected override ModelType CollectorType => ModelType.Method;
@@ -30,19 +32,57 @@ internal sealed class MethodCollector(IWarningRegistry warningRegistry, CSharpCo
         int startLine = node.GetLocation().GetLineSpan().StartLinePosition.Line;
         int length = CalculateMethodLength(node);
         int cyclomaticComplexity = CalculateCyclomaticComplexity(node);
+        List<ReferenceInstance> references = CalculateReferences(node).ToList();
 
-        return new MethodModel(
-            CurrentModelIdentifier,
-            modifier,
-            returnType,
-            startLine,
-            length,
-            cyclomaticComplexity);
+        return new MethodModel
+        {
+            Identifier = CurrentModelIdentifier,
+            AccessModifierType = modifier,
+            ReturnType = returnType,
+            LineStart = startLine,
+            Length = length,
+            CyclomaticComplexity = cyclomaticComplexity,
+            References = references
+        };
     }
 
     protected override string GetName(MethodDeclarationSyntax node)
     {
         return node.Identifier.Text;
+    }
+
+    private IEnumerable<ReferenceInstance> CalculateReferences(MethodDeclarationSyntax method)
+    {
+        SemanticModel semanticModel = compilation.GetSemanticModel(method.SyntaxTree);
+        IMethodSymbol? methodSymbol = semanticModel.GetDeclaredSymbol(method);
+
+        IdentifierCreator identifierCreator = new(warningRegistry);
+        List<ReferenceInstance> references = [];
+
+        foreach (SyntaxTree tree in compilation.SyntaxTrees)
+        {
+            SemanticModel treeModel = compilation.GetSemanticModel(tree);
+            SyntaxNode root = tree.GetRoot();
+            
+            IEnumerable<InvocationExpressionSyntax> invocations = root.DescendantNodes()
+                .OfType<InvocationExpressionSyntax>();
+
+            foreach (InvocationExpressionSyntax invocation in invocations)
+            {
+                ISymbol? symbol = treeModel.GetSymbolInfo(invocation).Symbol;
+                if (SymbolEqualityComparer.Default.Equals(symbol, methodSymbol))
+                {
+                    references.Add(new ReferenceInstance
+                    {
+                        Namespace = _namespaceCreator.CreateJoined(invocation),
+                        LineNumber = invocation.GetLocation().GetLineSpan().StartLinePosition.Line + 1,
+                        ColumnNumber = invocation.GetLocation().GetLineSpan().StartLinePosition.Character + 1
+                    });
+                }
+            }
+        }
+
+        return references;
     }
 
     private int CalculateCyclomaticComplexity(MethodDeclarationSyntax method)

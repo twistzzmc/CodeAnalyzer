@@ -6,11 +6,14 @@ namespace CodeAnalyzer.Core.Warnings.Interfaces;
 
 public interface IWarningRegistry
 {
-    List<WarningData> Warnings { get; }
     event EventHandler<WarningData>? OnWarning;
-    event EventHandler<WarningEventArgs>? OnWarningNeedsContext;
+    
+    List<WarningData> Warnings { get; }
+    IdentifierDto? CurrentIdentifier { get; }
+    ModelType CurrentModelType { get; }
 
     void RegisterWarning(WarningType type, string message);
-
-    void RegisterWarning(IdentifierDto identifier, ModelType modelType, WarningType type, string message);
+    void SetContext(IdentifierDto identifier, ModelType modelType);
+    void SetSimpleContext(string name, ModelType modelType);
+    void ClearContext();
 }

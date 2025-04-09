@@ -23,6 +23,12 @@ internal sealed class SimpleLogEntryBuilder(string title)
         return this;
     }
 
+    public SimpleLogEntryBuilder WithChild(LogEntry entry)
+    {
+        _entry.AddChild(entry);
+        return this;
+    }
+
     public LogEntry Build()
     {
         return _entry;

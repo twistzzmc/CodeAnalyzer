@@ -1,6 +1,5 @@
 using CodeAnalyzer.Core.Identifiers;
 using CodeAnalyzer.Core.Models.Interfaces;
-using CodeAnalyzer.Core.Warnings.Data;
 using CodeAnalyzer.Core.Warnings.Enums;
 using CodeAnalyzer.Core.Warnings.Interfaces;
 using CodeAnalyzer.Parser.Collectors.Creators;
@@ -21,24 +20,18 @@ public abstract class BaseCollector<TModel, TNode>(IWarningRegistry warningRegis
     {
         try
         {
+            warningRegistry.SetSimpleContext(GetName(node), CollectorType);
             CurrentModelIdentifier = IdentifierCreator.Create(GetName(node), node);
-            warningRegistry.OnWarningNeedsContext += FillWarningContext;
+            warningRegistry.SetContext(CurrentModelIdentifier, CollectorType);
             return InnerCollect(node);
         }
         finally
         {
-            warningRegistry.OnWarningNeedsContext -= FillWarningContext;
+            warningRegistry.ClearContext();
             CurrentModelIdentifier = null;
         }
     }
 
     protected abstract TModel InnerCollect(TNode node);
     protected abstract string GetName(TNode node);
-
-    private void FillWarningContext(object? sender, WarningEventArgs args)
-    {
-        if (CurrentModelIdentifier is null) throw new InvalidOperationException("Current model identifier was not set");
-
-        args.ProvideContext(CurrentModelIdentifier, CollectorType);
-    }
 }

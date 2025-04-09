@@ -4,7 +4,7 @@ using CodeAnalyzer.Core.Warnings.Enums;
 namespace CodeAnalyzer.Core.Warnings.Data;
 
 public record WarningData(
-    IdentifierDto Identifier,
+    IdentifierDto? Identifier,
     ModelType ModelType,
     WarningType WarningType,
     string Message);

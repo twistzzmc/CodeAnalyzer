@@ -5,20 +5,15 @@ using CodeAnalyzer.Core.Models.SubModels;
 
 namespace CodeAnalyzer.Core.Models;
 
-public class MethodModel(
-    IdentifierDto identifier,
-    AccessModifierType accessModifierType,
-    ReturnType returnType,
-    int lineStart,
-    int length,
-    int cyclomaticComplexity) : IModel
+public class MethodModel : IModel
 {
-    public IdentifierDto Identifier { get; } = identifier;
-    public AccessModifierType AccessModifierType => accessModifierType;
-    public ReturnType ReturnType => returnType;
-    public int LineStart => lineStart;
-    public int Length => length;
-    public int CyclomaticComplexity => cyclomaticComplexity;
+    public required IdentifierDto Identifier { get; init; }
+    public required AccessModifierType AccessModifierType { get; init; }
+    public required ReturnType ReturnType { get; init; }
+    public required int LineStart { get; init; }
+    public required int Length { get; init; }
+    public required int CyclomaticComplexity { get; init; }
+    public required IReadOnlyList<ReferenceInstance> References { get; init; }
 
     public override string ToString()
     {
