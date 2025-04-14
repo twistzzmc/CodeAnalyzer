@@ -1,11 +1,13 @@
 using CodeAnalyzer.Core.Models.Enums;
 using CodeAnalyzer.Core.Warnings.Enums;
 using CodeAnalyzer.Core.Warnings.Interfaces;
+using CodeAnalyzer.Parser.Collectors.Interfaces;
 using Microsoft.CodeAnalysis;
 
-namespace CodeAnalyzer.Parser.Converters;
+namespace CodeAnalyzer.Parser.Collectors.Calculators;
 
-public sealed class AccessModifierConverter(IWarningRegistry warningRegistry)
+public sealed class AccessModifierCalculator(IWarningRegistry warningRegistry)
+    : ICalculator<AccessModifierType, SyntaxTokenList>
 {
     private const string PUBLIC = "Public";
     private const string INTERNAL = "Internal";
@@ -19,7 +21,7 @@ public sealed class AccessModifierConverter(IWarningRegistry warningRegistry)
     
     private readonly List<string> _modifiers = [];
     
-    public AccessModifierType Convert(SyntaxTokenList modifierList)
+    public AccessModifierType Calculate(SyntaxTokenList modifierList)
     {
         _modifiers.Clear();
 
