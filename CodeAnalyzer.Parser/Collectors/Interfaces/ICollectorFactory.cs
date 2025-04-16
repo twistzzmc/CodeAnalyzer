@@ -12,5 +12,5 @@ internal interface ICollectorFactory
     
     ICollector<MethodModel, MethodDeclarationSyntax> CreateMethodCollector(CSharpCompilation compilation);
     
-    ICollector<PropertyModel, PropertyDeclarationSyntax> CreatePropertyCollector();
+    ICollector<PropertyModel, PropertyDeclarationSyntax> CreatePropertyCollector(CSharpCompilation compilation);
 }

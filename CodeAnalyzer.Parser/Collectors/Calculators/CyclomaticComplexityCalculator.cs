@@ -1,6 +1,8 @@
+using CodeAnalyzer.Core.Models.Interfaces;
+using CodeAnalyzer.Core.Models.SubModels.PropertyValues;
 using CodeAnalyzer.Core.Warnings.Enums;
 using CodeAnalyzer.Core.Warnings.Interfaces;
-using CodeAnalyzer.Parser.Collectors.Interfaces;
+using CodeAnalyzer.Parser.Collectors.Calculators.Base;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -10,9 +12,9 @@ namespace CodeAnalyzer.Parser.Collectors.Calculators;
 
 internal sealed class CyclomaticComplexityCalculator(
     IWarningRegistry warningRegistry,
-    CSharpCompilation compilation) : ICalculator<int, MemberDeclarationSyntax>
+    CSharpCompilation compilation) : BasePropertyCalculator<int>
 {
-    public int Calculate(MemberDeclarationSyntax options)
+    public override int Calculate(CSharpSyntaxNode options)
     {
         try
         {
@@ -35,25 +37,36 @@ internal sealed class CyclomaticComplexityCalculator(
         }
     }
 
-    private void HandleNullGraph(SemanticModel semanticModel, MemberDeclarationSyntax options)
+    protected override IPropertyValue<int> Create(int get, int set)
     {
+        return new PropertyCyclomaticComplexity(get, set);
+    }
+
+    private int HandleNullGraph(SemanticModel semanticModel, CSharpSyntaxNode options)
+    {
+        if (options is AccessorDeclarationSyntax)
+        {
+            return 1;
+        }
+        
         ISymbol? methodSymbol = semanticModel.GetDeclaredSymbol(options);
         INamedTypeSymbol? containingType = methodSymbol?.ContainingType;
         
         if (containingType?.TypeKind == TypeKind.Interface)
         {
             // Metoda interfejsu ma złożoność równą 0 i brak grafu
-            return;
+            return 0;
         }
 
         if (methodSymbol?.IsAbstract == true)
         {
             // Metoda abstrakcyjna nie musi mieć implementacji
-            return;
+            return 0;
         }
                 
         warningRegistry.RegisterWarning(WarningType.CyclomaticComplexity, 
             "Nie udało się zbydować ControlFlowGraph");
+        return 0;
     }
     
     private static int CalculateCyclomaticComplexity(ControlFlowGraph cfg)

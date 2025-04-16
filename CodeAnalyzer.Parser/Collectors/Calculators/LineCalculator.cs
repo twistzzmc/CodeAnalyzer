@@ -1,11 +1,11 @@
 using CodeAnalyzer.Parser.Collectors.Interfaces;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace CodeAnalyzer.Parser.Collectors.Calculators;
 
-internal sealed class LineCalculator : ICalculator<int, MemberDeclarationSyntax>
+internal sealed class LineCalculator : ICalculator<int, CSharpSyntaxNode>
 {
-    public int Calculate(MemberDeclarationSyntax options)
+    public int Calculate(CSharpSyntaxNode options)
     {
         return options.GetLocation().GetLineSpan().StartLinePosition.Line;
     }

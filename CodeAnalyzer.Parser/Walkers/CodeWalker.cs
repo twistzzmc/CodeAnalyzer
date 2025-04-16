@@ -5,7 +5,6 @@ using CodeAnalyzer.Core.Warnings.Interfaces;
 using CodeAnalyzer.Parser.Collectors.Creators;
 using CodeAnalyzer.Parser.Collectors.Factories;
 using CodeAnalyzer.Parser.Collectors.Interfaces;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -41,7 +40,7 @@ internal sealed class CodeWalker(ICollectorFactory collectorFactory, CSharpCompi
 
     public override void VisitPropertyDeclaration(PropertyDeclarationSyntax node)
     {
-        PropertyModel model = collectorFactory.CreatePropertyCollector().Collect(node);
+        PropertyModel model = collectorFactory.CreatePropertyCollector(compilation).Collect(node);
         _builder.RegisterProperty(model);
         base.VisitPropertyDeclaration(node);
     }

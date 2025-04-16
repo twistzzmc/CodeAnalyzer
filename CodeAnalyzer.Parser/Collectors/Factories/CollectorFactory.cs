@@ -16,8 +16,8 @@ internal sealed class CollectorFactory(IWarningRegistry warningRegistry) : IColl
         return new MethodCollector(WarningRegistry, compilation);
     }
 
-    public ICollector<PropertyModel, PropertyDeclarationSyntax> CreatePropertyCollector()
+    public ICollector<PropertyModel, PropertyDeclarationSyntax> CreatePropertyCollector(CSharpCompilation compilation)
     {
-        return new PropertyCollector(WarningRegistry);
+        return new PropertyCollector(WarningRegistry, compilation);
     }
 }
