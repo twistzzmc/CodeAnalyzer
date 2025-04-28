@@ -31,6 +31,13 @@ internal sealed class CodeWalker(ICollectorFactory collectorFactory, CSharpCompi
         base.VisitClassDeclaration(node);
     }
 
+    public override void VisitInterfaceDeclaration(InterfaceDeclarationSyntax node)
+    {
+        IdentifierDto classIdentifier = _identifierCreator.Create(node.Identifier.Text, node);
+        _builder.RegisterClass(classIdentifier);
+        base.VisitInterfaceDeclaration(node);
+    }
+
     public override void VisitMethodDeclaration(MethodDeclarationSyntax node)
     {
         MethodModel model = collectorFactory.CreateMethodCollector(compilation).Collect(node);

@@ -1,6 +1,7 @@
 using CodeAnalyzer.Core.Models.Enums;
 using CodeAnalyzer.Core.Models.Interfaces;
 using CodeAnalyzer.Core.Models.SubModels;
+using CodeAnalyzer.Core.Models.SubModels.PropertyValues;
 using CodeAnalyzer.Parser.Collectors.Interfaces;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -22,9 +23,9 @@ internal interface ICalculatorFactory
     
     ICalculator<int, CSharpSyntaxNode> CreateLineCalculator();
     
-    ICalculator<IEnumerable<ReferenceInstance>, CSharpSyntaxNode> CreateReferencesCalculator();
+    ICalculator<IEnumerable<ReferenceInstance>, MethodDeclarationSyntax> CreateReferencesCalculator();
     
-    ICalculator<IPropertyValue<IEnumerable<ReferenceInstance>>, PropertyDeclarationSyntax> CreatePropertyReferencesCalculator();
+    ICalculator<PropertyReferences, PropertyDeclarationSyntax> CreatePropertyReferencesCalculator();
     
     ICalculator<ReturnType, TypeSyntax> CreateReturnTypeCalculator();
 }

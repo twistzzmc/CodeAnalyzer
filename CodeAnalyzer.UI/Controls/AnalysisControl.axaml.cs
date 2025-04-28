@@ -55,15 +55,18 @@ public partial class AnalysisControl : UserControl
     {
         try
         {
-            foreach (ClassModel model in Parse())
+            List<MethodResultDto> results = [];
+            List<ClassModel> models = Parse().ToList();
+            
+            foreach (ClassModel model in models)
             {
                 Logger.Log(new ClassEntryBuilder().Build(model));
 
                 MethodAnalyzer analyzer = new();
-                IEnumerable<MethodResultDto> results = analyzer.Analyze(model.Methods);
-
-                MethodTooLongLogger.Log(Logger, results);
+                results.AddRange(analyzer.Analyze(model.Methods));
             }
+            
+            MethodTooLongLogger.Log(Logger, results);
         }
         catch (Exception ex)
         {
