@@ -1,9 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
-using CodeAnalyzer.Core.Analyzers.Dtos.Result;
-using CodeAnalyzer.Core.Analyzers.Enums;
+using CodeAnalyzer.Analyzer.Enums;
+using CodeAnalyzer.Analyzer.Results;
 using CodeAnalyzer.Core.Models;
-using CodeAnalyzer.UI.Interfaces;
 using CodeAnalyzer.UI.LoggerUi.Builders;
 using CodeAnalyzer.UI.LoggerUi.Dtos;
 using CodeAnalyzer.UI.LoggerUi.Interfaces;

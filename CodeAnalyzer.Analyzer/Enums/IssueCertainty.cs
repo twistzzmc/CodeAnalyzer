@@ -1,4 +1,4 @@
-namespace CodeAnalyzer.Core.Analyzers.Enums;
+namespace CodeAnalyzer.Analyzer.Enums;
 
 public enum IssueCertainty
 {

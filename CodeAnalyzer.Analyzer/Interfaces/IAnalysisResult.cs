@@ -1,7 +1,7 @@
-using CodeAnalyzer.Core.Analyzers.Enums;
+using CodeAnalyzer.Analyzer.Enums;
 using CodeAnalyzer.Core.Models.Interfaces;
 
-namespace CodeAnalyzer.Core.Analyzers.Interfaces;
+namespace CodeAnalyzer.Analyzer.Interfaces;
 
 internal interface IAnalysisResult<out TModel>
     where TModel : IModel

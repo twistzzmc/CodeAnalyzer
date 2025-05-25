@@ -1,17 +1,15 @@
-using CodeAnalyzer.Core.Analyzers.Dtos.Configuration;
-using CodeAnalyzer.Core.Analyzers.Dtos.Result;
-using CodeAnalyzer.Core.Analyzers.Enums;
-using CodeAnalyzer.Core.Analyzers.Interfaces;
+using CodeAnalyzer.Analyzer.Configurations;
+using CodeAnalyzer.Analyzer.Enums;
+using CodeAnalyzer.Analyzer.Interfaces;
+using CodeAnalyzer.Analyzer.Results;
 using CodeAnalyzer.Core.Models;
 
-namespace CodeAnalyzer.Core.Analyzers;
+namespace CodeAnalyzer.Analyzer;
 
 public sealed class MethodAnalyzer : IAnalyzer<MethodModel, MethodResultDto>
 {
-    public MethodTooLongLevelConfiguration Warning { get; }
-        = new(50, 5);
-    public MethodTooLongLevelConfiguration Problem { get; }
-        = new(100, 10);
+    public MtlConfiguration Warning { get; } = new(50, 5);
+    public MtlConfiguration Problem { get; } = new(100, 10);
 
     public MethodResultDto Analyze(MethodModel model)
     {

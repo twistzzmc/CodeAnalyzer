@@ -1,8 +1,8 @@
-using CodeAnalyzer.Core.Analyzers.Enums;
-using CodeAnalyzer.Core.Analyzers.Interfaces;
+using CodeAnalyzer.Analyzer.Enums;
+using CodeAnalyzer.Analyzer.Interfaces;
 using CodeAnalyzer.Core.Models;
 
-namespace CodeAnalyzer.Core.Analyzers.Dtos.Result;
+namespace CodeAnalyzer.Analyzer.Results;
 
 public sealed record MethodResultDto(
     MethodModel Model,

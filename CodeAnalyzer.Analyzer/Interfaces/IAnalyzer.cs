@@ -1,6 +1,6 @@
 using CodeAnalyzer.Core.Models.Interfaces;
 
-namespace CodeAnalyzer.Core.Analyzers.Interfaces;
+namespace CodeAnalyzer.Analyzer.Interfaces;
 
 internal interface IAnalyzer<in TModel, out TResult>
     where TModel : IModel

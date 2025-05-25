@@ -22,6 +22,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\CodeAnalyzer.Analyzer\CodeAnalyzer.Analyzer.csproj" />
       <ProjectReference Include="..\CodeAnalyzer.Core\CodeAnalyzer.Core.csproj" />
       <ProjectReference Include="..\CodeAnalyzer.Parser\CodeAnalyzer.Parser.csproj" />
     </ItemGroup>

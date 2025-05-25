@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeAnalyzer.Parser", "Code
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeAnalyzer.UI", "CodeAnalyzer.UI\CodeAnalyzer.UI.csproj", "{C4C693A1-ED3E-4D75-8687-E72DE27534B6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeAnalyzer.Analyzer", "CodeAnalyzer.Analyzer\CodeAnalyzer.Analyzer.csproj", "{2FC291F5-8B91-4E14-8DD6-F5144DA3B0F5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{C4C693A1-ED3E-4D75-8687-E72DE27534B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C4C693A1-ED3E-4D75-8687-E72DE27534B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C4C693A1-ED3E-4D75-8687-E72DE27534B6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2FC291F5-8B91-4E14-8DD6-F5144DA3B0F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2FC291F5-8B91-4E14-8DD6-F5144DA3B0F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2FC291F5-8B91-4E14-8DD6-F5144DA3B0F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2FC291F5-8B91-4E14-8DD6-F5144DA3B0F5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
