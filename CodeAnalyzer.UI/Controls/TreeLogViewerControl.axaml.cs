@@ -33,35 +33,35 @@ public partial class TreeLogViewerControl : UserControl, ILoggerUi, ILogger
     public void Success(string message, params object[] messageParameters)
     {
         LogEntry entry = new(string.Format(message, messageParameters), LogPriority.Success);
-        AddEntry(entry);
+        // AddEntry(entry);
         _queue.Register(entry);
     }
 
     public void Info(string message, params object[] messageParameters)
     {
         LogEntry entry = new(string.Format(message, messageParameters), LogPriority.Info);
-        AddEntry(entry);
+        // AddEntry(entry);
         _queue.Register(entry);
     }
 
     public void Warning(string message, params object[] messageParameters)
     {
         LogEntry entry = new(string.Format(message, messageParameters), LogPriority.Warning);
-        AddEntry(entry);
+        // AddEntry(entry);
         _queue.Register(entry);
     }
 
     public void Error(string message, params object[] messageParameters)
     {
         LogEntry entry = new(string.Format(message, messageParameters), LogPriority.Error);
-        AddEntry(entry);
+        // AddEntry(entry);
         _queue.Register(entry);
     }
 
     public void Exception(Exception ex)
     {
         LogEntry entry = new(ex);
-        AddEntry(entry);
+        // AddEntry(entry);
         _queue.Register(entry);
     }
 

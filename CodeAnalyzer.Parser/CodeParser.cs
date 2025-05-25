@@ -34,12 +34,21 @@ public class CodeParser(IWarningRegistry warningRegistry, ILogger logger)
     {
         CodeWalker walker = new(warningRegistry, compilation);
 
-        foreach (SyntaxTree tree in compilation.SyntaxTrees)
+        try
         {
-            logger.Info("Chodzenie po drzewie {0}", tree.FilePath);
-            walker.Visit(tree.GetRoot());
+            logger.OpenLevel("Przeszukiwanie drzew. Ilość {0}", compilation.SyntaxTrees.Length);
+            foreach (SyntaxTree tree in compilation.SyntaxTrees)
+            {
+                logger.Info("Chodzenie po drzewie {0}", tree.Length);
+                walker.Visit(tree.GetRoot());
+            }
+        }
+        finally
+        {
+            logger.CloseLevel();
         }
         
+        logger.Info("Budowanie znalezionych klas");
         return walker.CollectClassModels();
     }
 

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 using CodeAnalyzer.Analyzer;
 using CodeAnalyzer.Analyzer.Results;
 using CodeAnalyzer.Core.Logging.Interfaces;
@@ -20,6 +21,8 @@ namespace CodeAnalyzer.UI.Controls;
 
 public partial class AnalysisControl : UserControl
 {
+    private sealed record ClassModelResult(bool IsSuccess, IEnumerable<ClassModel> Models);
+    
     public static readonly StyledProperty<IWarningRegistry> WarningRegistryProperty =
         AvaloniaProperty.Register<AnalysisControl, IWarningRegistry>(nameof(WarningRegistry));
 
@@ -61,29 +64,35 @@ public partial class AnalysisControl : UserControl
         InitializeComponent();
     }
 
-    private void AnalyzeTooLongMethods_OnClick(object? sender, RoutedEventArgs e)
+    private async void AnalyzeTooLongMethods_OnClick(object? sender, RoutedEventArgs e)
     {
         AnalyzeTooLongMethods.IsEnabled = false;
 
         try
         {
-            List<ClassModel> models = Parse().ToList();
-
-            List<MethodResultDto> mtlResults = [];
-            List<GodObjectResultDto> godObjectResults = [];
-
-            MtlAnalyzer mtlAnalyzer = new();
-            GodObjectAnalyzer godObjectAnalyzer = new(models);
-
-            foreach (ClassModel model in models)
+            await Task.Run(async () =>
             {
-                ResultLogger.AddEntry(new ClassEntryBuilder().Build(model));
+                List<ClassModel> models = (await Parse()).ToList();
 
-                mtlResults.AddRange(mtlAnalyzer.Analyze(model.Methods));
-            }
+                List<MethodResultDto> mtlResults = [];
+                List<GodObjectResultDto> godObjectResults = [];
 
-            MethodTooLongLogger.Log(ResultLogger, mtlResults);
-            new GodObjectLogger(ResultLogger).Log(godObjectResults);
+                MtlAnalyzer mtlAnalyzer = new();
+                GodObjectAnalyzer godObjectAnalyzer = new(models);
+
+                ILoggerUi resultLogger = await GetResultLogger();
+                
+                foreach (ClassModel model in models)
+                {
+                    resultLogger.AddEntry(new ClassEntryBuilder().Build(model));
+
+                    mtlResults.AddRange(mtlAnalyzer.Analyze(model.Methods));
+                    godObjectResults.Add(godObjectAnalyzer.Analyze(model));
+                }
+                
+                MethodTooLongLogger.Log(resultLogger, mtlResults);
+                new GodObjectLogger(resultLogger).Log(godObjectResults);
+            });
         }
         catch (Exception ex)
         {
@@ -95,42 +104,43 @@ public partial class AnalysisControl : UserControl
         }
     }
 
-    private IEnumerable<ClassModel> Parse()
+    private async Task<IEnumerable<ClassModel>> Parse()
     {
-        if (TryParseFile(out IEnumerable<ClassModel> fileModels))
+        ClassModelResult fileModels = await TryParseFile();
+        if (fileModels.IsSuccess)
         {
-            return fileModels;
+            return fileModels.Models;
         }
 
-        return TryParseFolder(out IEnumerable<ClassModel> folderModels)
-            ? folderModels
-            : [];
+        ClassModelResult folderModels = await TryParseFolder();
+        return folderModels.Models;
     } 
 
-    private bool TryParseFile(out IEnumerable<ClassModel> models)
+    private async Task<ClassModelResult> TryParseFile()
     {
-        string filePath = CodePathProvider.ProvideFile();
+        ICodePathProvider codePathProvider = await GetCodePathProvider();
+        string filePath = (await GetCodePathProvider()).ProvideFile();
 
         if (string.IsNullOrEmpty(filePath))
         {
-            models = [];
-            return false;
+            return new ClassModelResult(false, []);
         }
         
-        string code = File.ReadAllText(filePath);
-        models = CodeParser.Parse(WarningRegistry, Logger, code);
-        return true;
+        IWarningRegistry warningRegistry = await GetWarningRegistry();
+        ILogger logger = await GetLogger();
+        
+        string code = await File.ReadAllTextAsync(filePath);
+        return new ClassModelResult(true, CodeParser.Parse(warningRegistry, logger, code));
     }
 
-    private bool TryParseFolder(out IEnumerable<ClassModel> models)
+    private async Task<ClassModelResult> TryParseFolder()
     {
         string[] excludedFolders = ["obj", "bin", "Tests", "Generated"];
-        string folderPath = CodePathProvider.ProvideFolder();
-        models = [];
+        string folderPath = (await GetCodePathProvider()).ProvideFolder();
 
         if (string.IsNullOrEmpty(folderPath))
         {
-            return false;
+            return new ClassModelResult(false, []);
         }
         
         string[] files = Directory.GetFiles(folderPath, "*.cs", SearchOption.AllDirectories)
@@ -139,8 +149,22 @@ public partial class AnalysisControl : UserControl
                         .Contains(folder)))
             .ToArray();
 
+        IWarningRegistry warningRegistry = await GetWarningRegistry();
+        ILogger logger = await GetLogger();
+        
         IEnumerable<string> codes = files.Select(File.ReadAllText);
-        models = CodeParser.Parse(WarningRegistry, Logger, codes);
-        return true;
+        return new ClassModelResult(true, CodeParser.Parse(warningRegistry, logger, codes));
     }
+
+    private async Task<IWarningRegistry> GetWarningRegistry()
+        => await Dispatcher.UIThread.InvokeAsync(() => WarningRegistry);
+    
+    private async Task<ILoggerUi> GetResultLogger()
+        => await Dispatcher.UIThread.InvokeAsync(() => ResultLogger);
+    
+    private async Task<ILogger> GetLogger()
+        => await Dispatcher.UIThread.InvokeAsync(() => Logger);
+    
+    private async Task<ICodePathProvider> GetCodePathProvider()
+        => await Dispatcher.UIThread.InvokeAsync(() => CodePathProvider);
 }

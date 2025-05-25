@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using CodeAnalyzer.UI.Base;
 using CodeAnalyzer.UI.LoggerUi.Enums;
 
@@ -7,11 +8,11 @@ namespace CodeAnalyzer.UI.LoggerUi.Dtos;
 
 public sealed class LogEntry : NotifiableProperty
 {
-    private readonly List<LogEntry> _children = [];
+    private readonly ObservableCollection<LogEntry> _children = [];
     private bool _isExpanded = true;
     
     public string Title { get; set; } = string.Empty;
-    public LogPriority Priority { get; set; } = LogPriority.Info;
+    public LogPriority Priority { get; } = LogPriority.Info;
     
     public int WarningCount { get; private set; }
     public int ErrorCount { get; private set; }
