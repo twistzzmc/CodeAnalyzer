@@ -7,12 +7,12 @@ using CodeAnalyzer.Core.Models;
 
 namespace CodeAnalyzer.Analyzer;
 
-public sealed class MtlAnalyzer : IAnalyzer<MtlParameters, MethodModel, MethodResultDto>
+public sealed class MtlAnalyzer : IAnalyzer<MtlConfiguration, MtlParameters, MethodModel, MethodResultDto>
 {
     private MtlParameters Warning => Configuration.WarningThreshold;
     private MtlParameters Problem => Configuration.ProblemThreshold;
     
-    public IAnalysisConfiguration<MtlParameters> Configuration { get; } = new MtlConfiguration
+    public MtlConfiguration Configuration { get; } = new MtlConfiguration
     {
         WarningThreshold = new MtlParameters(50, 5),
         ProblemThreshold = new MtlParameters(100, 10)
