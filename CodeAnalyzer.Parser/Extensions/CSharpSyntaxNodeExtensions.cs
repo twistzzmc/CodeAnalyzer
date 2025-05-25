@@ -1,4 +1,4 @@
-using CodeAnalyzer.Core.Warnings.Enums;
+using CodeAnalyzer.Core.Logging.Enums;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 

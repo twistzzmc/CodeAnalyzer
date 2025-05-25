@@ -1,6 +1,6 @@
-﻿using CodeAnalyzer.Core.Models;
+﻿using CodeAnalyzer.Core.Logging.Interfaces;
+using CodeAnalyzer.Core.Models;
 using CodeAnalyzer.Core.Models.Builders;
-using CodeAnalyzer.Core.Warnings.Interfaces;
 using CodeAnalyzer.Parser.Walkers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace CodeAnalyzer.Parser;
 
-public class CodeParser(IWarningRegistry warningRegistry)
+public class CodeParser(IWarningRegistry warningRegistry, ILogger logger)
 {
     public IEnumerable<ClassModel> Parse(IEnumerable<string> codes)
     {
@@ -20,14 +20,14 @@ public class CodeParser(IWarningRegistry warningRegistry)
         return Walk(Compile([code]));
     }
 
-    public static IEnumerable<ClassModel> Parse(IWarningRegistry warningRegistry, string code)
+    public static IEnumerable<ClassModel> Parse(IWarningRegistry warningRegistry, ILogger logger, string code)
     {
-        return new CodeParser(warningRegistry).Parse(code);
+        return new CodeParser(warningRegistry, logger).Parse(code);
     }
 
-    public static IEnumerable<ClassModel> Parse(IWarningRegistry warningRegistry, IEnumerable<string> codes)
+    public static IEnumerable<ClassModel> Parse(IWarningRegistry warningRegistry, ILogger logger, IEnumerable<string> codes)
     {
-        return new CodeParser(warningRegistry).Parse(codes);
+        return new CodeParser(warningRegistry, logger).Parse(codes);
     }
 
     private IEnumerable<ClassModel> Walk(CSharpCompilation compilation)
@@ -36,6 +36,7 @@ public class CodeParser(IWarningRegistry warningRegistry)
 
         foreach (SyntaxTree tree in compilation.SyntaxTrees)
         {
+            logger.Info("Chodzenie po drzewie {0}", tree.FilePath);
             walker.Visit(tree.GetRoot());
         }
         

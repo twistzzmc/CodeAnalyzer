@@ -1,4 +1,4 @@
-namespace CodeAnalyzer.Core.Warnings.Enums;
+namespace CodeAnalyzer.Core.Logging.Enums;
 
 public enum WarningType
 {

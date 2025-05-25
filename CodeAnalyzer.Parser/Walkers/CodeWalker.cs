@@ -1,7 +1,7 @@
 using CodeAnalyzer.Core.Identifiers;
+using CodeAnalyzer.Core.Logging.Interfaces;
 using CodeAnalyzer.Core.Models;
 using CodeAnalyzer.Core.Models.Builders;
-using CodeAnalyzer.Core.Warnings.Interfaces;
 using CodeAnalyzer.Parser.Collectors.Creators;
 using CodeAnalyzer.Parser.Collectors.Factories;
 using CodeAnalyzer.Parser.Collectors.Interfaces;

@@ -5,11 +5,9 @@ namespace CodeAnalyzer.UI.LoggerUi.Interfaces;
 
 public interface ILoggerUi
 {
-    void Log(LogEntry entry);
+    void AddEntry(LogEntry entry);
     
-    void Log(string message);
+    void AddEntry(string message);
 
-    void Log();
-
-    void Log(Exception ex);
+    void AddEntry(Exception ex);
 }

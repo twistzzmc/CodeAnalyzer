@@ -2,13 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using CodeAnalyzer.Analyzer;
 using CodeAnalyzer.Analyzer.Results;
+using CodeAnalyzer.Core.Logging.Interfaces;
 using CodeAnalyzer.Core.Models;
-using CodeAnalyzer.Core.Warnings.Interfaces;
 using CodeAnalyzer.Parser;
 using CodeAnalyzer.UI.AnalysisLoggers;
 using CodeAnalyzer.UI.Interfaces;
@@ -25,8 +26,11 @@ public partial class AnalysisControl : UserControl
     public static readonly StyledProperty<ICodePathProvider> CodePathProviderProperty =
         AvaloniaProperty.Register<AnalysisControl, ICodePathProvider>(nameof(CodePathProvider));
 
-    public static readonly StyledProperty<ILoggerUi> LoggerProperty =
-        AvaloniaProperty.Register<AnalysisControl, ILoggerUi>(nameof(Logger));
+    public static readonly StyledProperty<ILoggerUi> ResultLoggerProperty =
+        AvaloniaProperty.Register<AnalysisControl, ILoggerUi>(nameof(ResultLogger));
+    
+    public static readonly StyledProperty<ILogger> LoggerProperty =
+        AvaloniaProperty.Register<AnalysisControl, ILogger>(nameof(Logger));
 
     public IWarningRegistry WarningRegistry
     {
@@ -40,7 +44,13 @@ public partial class AnalysisControl : UserControl
         set => SetValue(CodePathProviderProperty, value);
     }
 
-    public ILoggerUi Logger
+    public ILoggerUi ResultLogger
+    {
+        get => GetValue(ResultLoggerProperty);
+        set => SetValue(ResultLoggerProperty, value);
+    }
+
+    public ILogger Logger
     {
         get => GetValue(LoggerProperty);
         set => SetValue(LoggerProperty, value);
@@ -53,29 +63,35 @@ public partial class AnalysisControl : UserControl
 
     private void AnalyzeTooLongMethods_OnClick(object? sender, RoutedEventArgs e)
     {
+        AnalyzeTooLongMethods.IsEnabled = false;
+
         try
         {
             List<ClassModel> models = Parse().ToList();
-            
+
             List<MethodResultDto> mtlResults = [];
             List<GodObjectResultDto> godObjectResults = [];
 
             MtlAnalyzer mtlAnalyzer = new();
             GodObjectAnalyzer godObjectAnalyzer = new(models);
-            
+
             foreach (ClassModel model in models)
             {
-                Logger.Log(new ClassEntryBuilder().Build(model));
+                ResultLogger.AddEntry(new ClassEntryBuilder().Build(model));
 
                 mtlResults.AddRange(mtlAnalyzer.Analyze(model.Methods));
             }
-            
-            MethodTooLongLogger.Log(Logger, mtlResults);
-            new GodObjectLogger(Logger).Log(godObjectResults);
+
+            MethodTooLongLogger.Log(ResultLogger, mtlResults);
+            new GodObjectLogger(ResultLogger).Log(godObjectResults);
         }
         catch (Exception ex)
         {
-            Logger.Log(ex);
+            ResultLogger.AddEntry(ex);
+        }
+        finally
+        {
+            AnalyzeTooLongMethods.IsEnabled = true;
         }
     }
 
@@ -102,7 +118,7 @@ public partial class AnalysisControl : UserControl
         }
         
         string code = File.ReadAllText(filePath);
-        models = CodeParser.Parse(WarningRegistry, code);
+        models = CodeParser.Parse(WarningRegistry, Logger, code);
         return true;
     }
 
@@ -124,7 +140,7 @@ public partial class AnalysisControl : UserControl
             .ToArray();
 
         IEnumerable<string> codes = files.Select(File.ReadAllText);
-        models = CodeParser.Parse(WarningRegistry, codes);
+        models = CodeParser.Parse(WarningRegistry, Logger, codes);
         return true;
     }
 }

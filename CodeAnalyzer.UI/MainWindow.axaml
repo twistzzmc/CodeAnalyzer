@@ -14,8 +14,16 @@
             <controls:AnalysisControl x:Name="Analysis"
                                       WarningRegistry="{Binding WarningRegistry}" 
                                       CodePathProvider="{Binding #CodePicker}"
-                                      Logger="{Binding #LogViewer}" />
+                                      ResultLogger="{Binding #ResultLogViewer}"
+                                      Logger="{Binding #ActiveLogViewer}" />
         </StackPanel>
-        <controls:TreeLogViewerControl x:Name="LogViewer" Grid.Row="1" />
+        <TabControl Grid.Row="1">
+            <TabItem Header="Bieżące logi">
+                <controls:TreeLogViewerControl x:Name="ActiveLogViewer" />
+            </TabItem>
+            <TabItem Header="Wyniki analizy">
+                <controls:TreeLogViewerControl x:Name="ResultLogViewer" />
+            </TabItem>
+        </TabControl>
     </Grid>
 </Window>

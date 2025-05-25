@@ -1,8 +1,8 @@
+using CodeAnalyzer.Core.Logging.Enums;
+using CodeAnalyzer.Core.Logging.Interfaces;
 using CodeAnalyzer.Core.Models;
 using CodeAnalyzer.Core.Models.Enums;
 using CodeAnalyzer.Core.Models.SubModels;
-using CodeAnalyzer.Core.Warnings.Enums;
-using CodeAnalyzer.Core.Warnings.Interfaces;
 using CodeAnalyzer.Parser.Collectors.Calculators;
 using CodeAnalyzer.Parser.Collectors.Calculators.Factories;
 using CodeAnalyzer.Parser.Collectors.Calculators.Interfaces;

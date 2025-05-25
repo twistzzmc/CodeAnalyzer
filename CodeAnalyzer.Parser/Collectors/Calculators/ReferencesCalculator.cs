@@ -1,5 +1,5 @@
+using CodeAnalyzer.Core.Logging.Interfaces;
 using CodeAnalyzer.Core.Models.SubModels;
-using CodeAnalyzer.Core.Warnings.Interfaces;
 using CodeAnalyzer.Parser.Collectors.Calculators.Base;
 using CodeAnalyzer.Parser.Collectors.Interfaces;
 using Microsoft.CodeAnalysis;

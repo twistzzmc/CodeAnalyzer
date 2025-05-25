@@ -1,7 +1,7 @@
 using CodeAnalyzer.Core.Identifiers;
-using CodeAnalyzer.Core.Warnings.Enums;
+using CodeAnalyzer.Core.Logging.Enums;
 
-namespace CodeAnalyzer.Core.Warnings.Data;
+namespace CodeAnalyzer.Core.Logging.Data;
 
 public record WarningData(
     IdentifierDto? Identifier,

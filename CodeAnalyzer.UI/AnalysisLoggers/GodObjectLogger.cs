@@ -13,6 +13,6 @@ internal sealed class GodObjectLogger(ILoggerUi logger)
         int problemCount = results.Count(r => r.Certainty == IssueCertainty.Problem);
         int warningCount = results.Count(r => r.Certainty == IssueCertainty.Warning);
         
-        logger.Log($"Znalezione GodObject: {problemCount + warningCount}");
+        logger.AddEntry($"Znalezione GodObject: {problemCount + warningCount}");
     }
 }

@@ -1,9 +1,8 @@
 using System;
 using Avalonia.Controls;
-using Avalonia.Interactivity;
-using CodeAnalyzer.Core.Warnings;
-using CodeAnalyzer.Core.Warnings.Data;
-using CodeAnalyzer.Core.Warnings.Interfaces;
+using CodeAnalyzer.Core.Logging;
+using CodeAnalyzer.Core.Logging.Data;
+using CodeAnalyzer.Core.Logging.Interfaces;
 using CodeAnalyzer.UI.LoggerUi.Builders;
 using CodeAnalyzer.UI.LoggerUi.Dtos;
 
@@ -18,7 +17,7 @@ public partial class MainWindow : Window
         InitializeComponent();
         CodePicker.OnFileSelected += LogCodeFilesPath;
         CodePicker.OnFolderSelected += LogFolderPath;
-        CodePicker.OnError += (_, exception) => LogViewer.Log(exception);
+        CodePicker.OnError += (_, exception) => ActiveLogViewer.AddEntry(exception);
         WarningRegistry = new WarningRegistry();
         WarningRegistry.OnWarning += LogWarning;
         DataContext = this;
@@ -26,12 +25,12 @@ public partial class MainWindow : Window
 
     private void LogFolderPath(object? sender, EventArgs e)
     {
-        LogViewer.Log($"Wybrano folder: {CodePicker.SelectedFolderPath}");
+        ActiveLogViewer.AddEntry($"Wybrano folder: {CodePicker.SelectedFolderPath}");
     }
 
     private void LogCodeFilesPath(object? sender, EventArgs e)
     {
-        LogViewer.Log($"Wybrano plik: {CodePicker.SelectedFilePath}");
+        ActiveLogViewer.AddEntry($"Wybrano plik: {CodePicker.SelectedFilePath}");
     }
 
     private void LogWarning(object? sender, WarningData e)
@@ -41,6 +40,6 @@ public partial class MainWindow : Window
             .WithChild($"Typ ostrzeżenia: {e.WarningType}")
             .WithChild($"Wiadomość: {e.Message}")
             .Build();
-        LogViewer.Log(log);
+        ActiveLogViewer.AddEntry(log);
     }
 }

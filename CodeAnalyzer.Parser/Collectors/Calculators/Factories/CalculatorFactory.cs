@@ -1,7 +1,7 @@
+using CodeAnalyzer.Core.Logging.Interfaces;
 using CodeAnalyzer.Core.Models.Enums;
 using CodeAnalyzer.Core.Models.Interfaces;
 using CodeAnalyzer.Core.Models.SubModels;
-using CodeAnalyzer.Core.Warnings.Interfaces;
 using CodeAnalyzer.Parser.Collectors.Calculators.Interfaces;
 using CodeAnalyzer.Parser.Collectors.Interfaces;
 using Microsoft.CodeAnalysis;

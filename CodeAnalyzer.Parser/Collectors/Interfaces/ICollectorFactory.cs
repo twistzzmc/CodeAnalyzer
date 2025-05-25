@@ -1,5 +1,5 @@
+using CodeAnalyzer.Core.Logging.Interfaces;
 using CodeAnalyzer.Core.Models;
-using CodeAnalyzer.Core.Warnings.Interfaces;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;

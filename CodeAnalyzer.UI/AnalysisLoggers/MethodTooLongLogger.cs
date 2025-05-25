@@ -20,11 +20,11 @@ internal sealed class MethodTooLongLogger(ILoggerUi logger)
         
         if (resultList.Count == 0)
         {
-            logger.Log("Nie znaleziono zbyt długich metod");
+            logger.AddEntry("Nie znaleziono zbyt długich metod");
             return;
         }
         
-        logger.Log("Znalezione metody, które są zbyt długie:");
+        logger.AddEntry("Znalezione metody, które są zbyt długie:");
         resultList
             .Where(result => result.Certainty == IssueCertainty.Problem)
             .ToList()
@@ -50,7 +50,7 @@ internal sealed class MethodTooLongLogger(ILoggerUi logger)
                 .WithChild("Złożoność cyklometryczna: {method.CyclomaticComplexity}")
                 .WithChild("Zaleca się podzielić metode na kilka mniejszych")
                 .Build();
-        logger.Log(log);
+        logger.AddEntry(log);
     }
 
     private void LogWarning(MethodResultDto result)
@@ -62,6 +62,6 @@ internal sealed class MethodTooLongLogger(ILoggerUi logger)
             .WithChild("Złożoność cyklometryczna: {method.CyclomaticComplexity}")
             .WithChild("Podzielenie metody może pozytywnie wpłynąć na czytelność kodu")
             .Build();
-        logger.Log(log);
+        logger.AddEntry(log);
     }
 }

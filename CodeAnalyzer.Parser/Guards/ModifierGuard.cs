@@ -1,6 +1,6 @@
 using CodeAnalyzer.Core.Constants;
-using CodeAnalyzer.Core.Warnings.Enums;
-using CodeAnalyzer.Core.Warnings.Interfaces;
+using CodeAnalyzer.Core.Logging.Enums;
+using CodeAnalyzer.Core.Logging.Interfaces;
 
 namespace CodeAnalyzer.Parser.Guards;
 

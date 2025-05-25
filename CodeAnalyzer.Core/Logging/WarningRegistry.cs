@@ -1,9 +1,9 @@
 using CodeAnalyzer.Core.Identifiers;
-using CodeAnalyzer.Core.Warnings.Data;
-using CodeAnalyzer.Core.Warnings.Enums;
-using CodeAnalyzer.Core.Warnings.Interfaces;
+using CodeAnalyzer.Core.Logging.Data;
+using CodeAnalyzer.Core.Logging.Enums;
+using CodeAnalyzer.Core.Logging.Interfaces;
 
-namespace CodeAnalyzer.Core.Warnings;
+namespace CodeAnalyzer.Core.Logging;
 
 public sealed class WarningRegistry : IWarningRegistry
 {

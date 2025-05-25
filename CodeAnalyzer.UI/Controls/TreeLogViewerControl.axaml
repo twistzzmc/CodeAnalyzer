@@ -7,9 +7,8 @@
              mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="400"
              x:Class="CodeAnalyzer.UI.Controls.TreeLogViewerControl"
              x:DataType="controls:TreeLogViewerControl">
-    <Grid RowDefinitions="Auto,*,Auto">
-        <TextBlock Text="Logi aplikacji:" FontWeight="Bold" Grid.Row="0" />
-        <TreeView ItemsSource="{Binding Entries}" Grid.Row="1">
+    <Grid RowDefinitions="*,Auto">
+        <TreeView ItemsSource="{Binding Entries}" Grid.Row="0">
             <TreeView.DataTemplates>
                 <TreeDataTemplate
                     DataType="{x:Type dtos:LogEntry}"
@@ -18,6 +17,6 @@
                 </TreeDataTemplate>
             </TreeView.DataTemplates>
         </TreeView>
-        <Button Content="Wyczyść logi" Click="OnClearLogsClicked" Grid.Row="2"/>
+        <Button Content="Wyczyść logi" Click="OnClearLogsClicked" Grid.Row="1"/>
     </Grid>
 </UserControl>
