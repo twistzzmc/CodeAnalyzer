@@ -43,12 +43,17 @@ internal sealed class CalculatorFactory(IWarningRegistry warningRegistry, CSharp
         return new LineCalculator();
     }
 
-    public ICalculator<IEnumerable<ReferenceInstance>, MethodDeclarationSyntax> CreateReferencesCalculator()
+    public ICalculator<IEnumerable<ReferenceInstance>, MethodDeclarationSyntax> CreateMethodReferencesCalculator()
     {
         return new ReferencesCalculator(warningRegistry, compilation);
     }
 
     public ICalculator<IEnumerable<ReferenceInstance>, PropertyDeclarationSyntax> CreatePropertyReferencesCalculator()
+    {
+        return new ReferencesCalculator(warningRegistry, compilation);
+    }
+
+    public ICalculator<IEnumerable<ReferenceInstance>, VariableDeclaratorSyntax> CreateVariableReferencesCalculator()
     {
         return new ReferencesCalculator(warningRegistry, compilation);
     }

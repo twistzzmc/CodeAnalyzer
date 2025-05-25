@@ -12,6 +12,7 @@ internal sealed class NamespaceCreator(IWarningRegistry warningRegistry)
     private List<NamespacePartDto>? _parts;
     
     public bool ExpectNonNamespaceDeclarations { get; set; }
+    public bool ExpectFieldNamespaceDeclarationTypes { get; set; }
 
     public IEnumerable<NamespacePartDto> Create(CSharpSyntaxNode node)
     {
@@ -43,6 +44,14 @@ internal sealed class NamespaceCreator(IWarningRegistry warningRegistry)
                     break;
                 case CompilationUnitSyntax:
                     // Korzeń pliku, do zignorowania
+                    break;
+                case FieldDeclarationSyntax:
+                case VariableDeclarationSyntax:
+                    // Dla pól do zignorowania
+                    if (!ExpectFieldNamespaceDeclarationTypes)
+                    {
+                        goto default;
+                    }
                     break;
 
                 default:

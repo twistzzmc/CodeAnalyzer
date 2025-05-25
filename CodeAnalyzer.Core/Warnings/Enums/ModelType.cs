@@ -7,5 +7,6 @@ public enum ModelType
     Struct,
     Record,
     Method,
-    Property
+    Property,
+    Field
 }

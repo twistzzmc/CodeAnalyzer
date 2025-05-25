@@ -14,7 +14,19 @@ public sealed class IdentifierCreator(IWarningRegistry warningRegistry)
 
     public IdentifierDto Create(string name, CSharpSyntaxNode node)
     {
-        return new IdentifierDto(CreateGuid(), name, _namespaceCreator.Create(node));
+        try
+        {
+            if (node is VariableDeclaratorSyntax)
+            {
+                _namespaceCreator.ExpectFieldNamespaceDeclarationTypes = true;
+            }
+
+            return new IdentifierDto(CreateGuid(), name, _namespaceCreator.Create(node));
+        }
+        finally
+        {
+            _namespaceCreator.ExpectFieldNamespaceDeclarationTypes = false;
+        }
     }
 
     private static string CreateGuid()

@@ -22,9 +22,11 @@ internal interface ICalculatorFactory
     
     ICalculator<int, CSharpSyntaxNode> CreateLineCalculator();
     
-    ICalculator<IEnumerable<ReferenceInstance>, MethodDeclarationSyntax> CreateReferencesCalculator();
+    ICalculator<IEnumerable<ReferenceInstance>, MethodDeclarationSyntax> CreateMethodReferencesCalculator();
     
     ICalculator<IEnumerable<ReferenceInstance>, PropertyDeclarationSyntax> CreatePropertyReferencesCalculator();
+    
+    ICalculator<IEnumerable<ReferenceInstance>, VariableDeclaratorSyntax> CreateVariableReferencesCalculator();
     
     ICalculator<ReturnType, TypeSyntax> CreateReturnTypeCalculator();
 }

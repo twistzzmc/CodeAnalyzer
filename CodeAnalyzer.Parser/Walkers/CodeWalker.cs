@@ -51,4 +51,18 @@ internal sealed class CodeWalker(ICollectorFactory collectorFactory, CSharpCompi
         _builder.RegisterProperty(model);
         base.VisitPropertyDeclaration(node);
     }
+
+    public override void VisitFieldDeclaration(FieldDeclarationSyntax node)
+    {
+        ICollector<FieldModel, VariableDeclaratorSyntax> collector =
+            collectorFactory.CreateFieldCollector(compilation, node);
+        
+        foreach (VariableDeclaratorSyntax variableDeclaration in node.Declaration.Variables)
+        {
+            FieldModel model = collector.Collect(variableDeclaration);
+            _builder.RegisterField(model);
+        }
+        
+        base.VisitFieldDeclaration(node);
+    }
 }

@@ -21,6 +21,11 @@ public sealed class ClassModelsBuilder
         AddRegistry(property.Identifier.NamespaceText, classBuilder => classBuilder.AddProperty(property));
     }
 
+    public void RegisterField(FieldModel field)
+    {
+        AddRegistry(field.Identifier.NamespaceText, classBuilder => classBuilder.AddField(field));
+    }
+
     public IEnumerable<ClassModel> Build()
     {
         return _namespaceToBuilder.Select(kvp => kvp.Value.Build());

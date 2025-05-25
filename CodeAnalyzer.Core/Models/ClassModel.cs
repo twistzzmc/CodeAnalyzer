@@ -7,25 +7,12 @@ namespace CodeAnalyzer.Core.Models;
 public class ClassModel(
     IdentifierDto identifier,
     IEnumerable<MethodModel> methods,
-    IEnumerable<PropertyModel> properties)
+    IEnumerable<PropertyModel> properties,
+    IEnumerable<FieldModel> fields)
     : IModel
 {
-    private static readonly string ListDelimeter = $"{Environment.NewLine}\t\t";
-
     public IdentifierDto Identifier { get; } = identifier;
     public IReadOnlyList<MethodModel> Methods => methods.ToList();
     public IReadOnlyList<PropertyModel> Properties => properties.ToList();
-
-    public override string ToString()
-    {
-        return new StringBuilder()
-            .AppendLine($"{nameof(ClassModel)} {Identifier}")
-            .Append($"\t[{Methods.Count}] {nameof(Methods)}:")
-            .Append(ListDelimeter)
-            .AppendLine(string.Join(ListDelimeter, Methods))
-            .Append($"\t[{Properties.Count}] {nameof(Properties)}:")
-            .Append(ListDelimeter)
-            .AppendLine(string.Join(ListDelimeter, Properties))
-            .ToString();
-    }
+    public IReadOnlyList<FieldModel> Fields => fields.ToList();
 }

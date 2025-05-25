@@ -11,7 +11,8 @@ namespace CodeAnalyzer.Parser.Collectors.Calculators;
 
 internal sealed class ReferencesCalculator(IWarningRegistry warningRegistry, CSharpCompilation compilation) :
     ICalculator<IEnumerable<ReferenceInstance>, MethodDeclarationSyntax>,
-    ICalculator<IEnumerable<ReferenceInstance>, PropertyDeclarationSyntax>
+    ICalculator<IEnumerable<ReferenceInstance>, PropertyDeclarationSyntax>,
+    ICalculator<IEnumerable<ReferenceInstance>, VariableDeclaratorSyntax>
 {
     private readonly NamespaceCreator _namespaceCreator = new(warningRegistry) { ExpectNonNamespaceDeclarations = true };
     
@@ -40,12 +41,6 @@ internal sealed class ReferencesCalculator(IWarningRegistry warningRegistry, CSh
                 {
                     references.Add(CreateReference(invocation));
                 }
-                
-                // ISymbol? invocationSymbol = ModelExtensions.GetSymbolInfo(treeModel, invocation).Symbol;
-                // if (SymbolEqualityComparer.Default.Equals(invocationSymbol, memberSymbol))
-                // {
-                //     references.Add(CreateReference(invocation));
-                // }
             }
         }
         
@@ -80,6 +75,40 @@ internal sealed class ReferencesCalculator(IWarningRegistry warningRegistry, CSh
                 }
                 
                 references.Add(CreateReference(identifier));
+            }
+        }
+
+        return references;
+    }
+
+    public IEnumerable<ReferenceInstance> Calculate(VariableDeclaratorSyntax options)
+    {
+        SemanticModel semanticModel = compilation.GetSemanticModel(options.SyntaxTree);
+        ISymbol? variableSymbol = semanticModel.GetDeclaredSymbol(options);
+
+        if (variableSymbol == null)
+        {
+            return [];
+        }
+
+        List<ReferenceInstance> references = [];
+
+        foreach (SyntaxTree tree in compilation.SyntaxTrees)
+        {
+            SemanticModel treeModel = compilation.GetSemanticModel(tree);
+            SyntaxNode root = tree.GetRoot();
+
+            IEnumerable<IdentifierNameSyntax> identifiers = root.DescendantNodes()
+                .OfType<IdentifierNameSyntax>();
+
+            foreach (IdentifierNameSyntax identifier in identifiers)
+            {
+                ISymbol? identifierSymbol = treeModel.GetSymbolInfo(identifier).Symbol;
+
+                if (SymbolEqualityComparer.Default.Equals(identifierSymbol, variableSymbol))
+                {
+                    references.Add(CreateReference(identifier));
+                }
             }
         }
 

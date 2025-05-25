@@ -20,4 +20,11 @@ internal sealed class CollectorFactory(IWarningRegistry warningRegistry) : IColl
     {
         return new PropertyCollector(WarningRegistry, compilation);
     }
+
+    public ICollector<FieldModel, VariableDeclaratorSyntax> CreateFieldCollector(
+        CSharpCompilation compilation,
+        FieldDeclarationSyntax field)
+    {
+        return new FieldCollector(WarningRegistry, compilation, field);
+    }
 }

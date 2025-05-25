@@ -36,7 +36,7 @@ internal sealed class MethodCollector( IWarningRegistry warningRegistry, ICalcul
         int startLine = calculatorFactory.CreateLineCalculator().Calculate(node);
         int length = calculatorFactory.CreateLengthCalculator().Calculate(node);
         int cyclomaticComplexity = calculatorFactory.CreateCyclomaticComplexityCalculator().Calculate(node);
-        List<ReferenceInstance> references = calculatorFactory.CreateReferencesCalculator().Calculate(node).ToList();
+        List<ReferenceInstance> references = calculatorFactory.CreateMethodReferencesCalculator().Calculate(node).ToList();
 
         return new MethodModel
         {

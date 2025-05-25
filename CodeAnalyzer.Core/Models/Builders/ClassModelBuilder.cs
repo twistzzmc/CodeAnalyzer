@@ -6,6 +6,7 @@ public class ClassModelBuilder
 {
     private readonly List<MethodModel> _methods = [];
     private readonly List<PropertyModel> _properties = [];
+    private readonly List<FieldModel> _fields = [];
     private IdentifierDto? _identifier;
 
     public ClassModelBuilder WithIdentifier(IdentifierDto identifier)
@@ -26,9 +27,15 @@ public class ClassModelBuilder
         return this;
     }
 
+    public ClassModelBuilder AddField(FieldModel field)
+    {
+        _fields.Add(field);
+        return this;
+    }
+
     public ClassModel Build()
     {
         ArgumentNullException.ThrowIfNull(_identifier, nameof(_identifier));
-        return new ClassModel(_identifier, _methods, _properties);
+        return new ClassModel(_identifier, _methods, _properties, _fields);
     }
 }
