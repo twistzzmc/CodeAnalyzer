@@ -62,7 +62,7 @@ public partial class AnalysisControl : UserControl
             {
                 Logger.Log(new ClassEntryBuilder().Build(model));
 
-                MethodAnalyzer analyzer = new();
+                MtlAnalyzer analyzer = new();
                 results.AddRange(analyzer.Analyze(model.Methods));
             }
             

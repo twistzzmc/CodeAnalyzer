@@ -1,4 +1,5 @@
 using CodeAnalyzer.Analyzer.Configurations;
+using CodeAnalyzer.Analyzer.Configurations.Dtos;
 using CodeAnalyzer.Analyzer.Enums;
 using CodeAnalyzer.Analyzer.Interfaces;
 using CodeAnalyzer.Analyzer.Results;
@@ -6,10 +7,16 @@ using CodeAnalyzer.Core.Models;
 
 namespace CodeAnalyzer.Analyzer;
 
-public sealed class MethodAnalyzer : IAnalyzer<MethodModel, MethodResultDto>
+public sealed class MtlAnalyzer : IAnalyzer<MtlParameters, MethodModel, MethodResultDto>
 {
-    public MtlConfiguration Warning { get; } = new(50, 5);
-    public MtlConfiguration Problem { get; } = new(100, 10);
+    private MtlParameters Warning => Configuration.WarningThreshold;
+    private MtlParameters Problem => Configuration.ProblemThreshold;
+    
+    public IAnalysisConfiguration<MtlParameters> Configuration { get; } = new MtlConfiguration
+    {
+        WarningThreshold = new MtlParameters(50, 5),
+        ProblemThreshold = new MtlParameters(100, 10)
+    };
 
     public MethodResultDto Analyze(MethodModel model)
     {
