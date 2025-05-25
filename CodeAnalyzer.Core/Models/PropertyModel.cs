@@ -14,6 +14,6 @@ public class PropertyModel : IModel
     public required int LineStart { get; init; }
     public required PropertyLength Length { get; init; }
     public required PropertyCyclomaticComplexity CyclomaticComplexity { get; init; }
-    public required PropertyReferences References { get; init; }
+    public required IReadOnlyList<ReferenceInstance> References { get; init; }
     public bool HasSetter => Length.Set > 0;
 }

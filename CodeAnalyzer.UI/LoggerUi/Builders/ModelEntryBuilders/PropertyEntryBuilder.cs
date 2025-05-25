@@ -17,8 +17,7 @@ internal sealed class PropertyEntryBuilder : IModelEntryBuilder<PropertyModel>
             .WithChild($"Długość metody Set: {model.Length.Set}")
             .WithChild($"Złożoność cyklometryczna Get: {model.CyclomaticComplexity.Get}")
             .WithChild($"Złożoność cyklometryczna Set: {model.CyclomaticComplexity.Set}")
-            .WithChild(new ReferenceEntryBuilder(ReferenceEntryBuilder.ReferenceType.Get).Build(model.References.Get))
-            .WithChild(new ReferenceEntryBuilder(ReferenceEntryBuilder.ReferenceType.Set).Build(model.References.Set))
+            .WithChild(new ReferenceEntryBuilder(ReferenceEntryBuilder.ReferenceType.Get).Build(model.References))
             .Build();
     }
 }

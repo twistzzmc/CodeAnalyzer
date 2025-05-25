@@ -35,7 +35,7 @@ internal sealed class PropertyCollector(IWarningRegistry warningRegistry, ICalcu
             LineStart = calculatorFactory.CreateLineCalculator().Calculate(node),
             Length = calculatorFactory.CreatePropertyLengthCalculator().Calculate(node).ToLengthDto(),
             CyclomaticComplexity = calculatorFactory.CreatePropertyCyclomaticComplexityCalculator().Calculate(node).ToComplexityDto(),
-            References = calculatorFactory.CreatePropertyReferencesCalculator().Calculate(node).ToReferenceDto()
+            References = calculatorFactory.CreatePropertyReferencesCalculator().Calculate(node).ToList()
         };
     }
 

@@ -1,7 +1,6 @@
 using CodeAnalyzer.Core.Models.Enums;
 using CodeAnalyzer.Core.Models.Interfaces;
 using CodeAnalyzer.Core.Models.SubModels;
-using CodeAnalyzer.Core.Models.SubModels.PropertyValues;
 using CodeAnalyzer.Core.Warnings.Interfaces;
 using CodeAnalyzer.Parser.Collectors.Calculators.Interfaces;
 using CodeAnalyzer.Parser.Collectors.Interfaces;
@@ -44,12 +43,12 @@ internal sealed class CalculatorFactory(IWarningRegistry warningRegistry, CSharp
         return new LineCalculator();
     }
 
-    ICalculator<IEnumerable<ReferenceInstance>, MethodDeclarationSyntax> ICalculatorFactory.CreateReferencesCalculator()
+    public ICalculator<IEnumerable<ReferenceInstance>, MethodDeclarationSyntax> CreateReferencesCalculator()
     {
         return new ReferencesCalculator(warningRegistry, compilation);
     }
 
-    public ICalculator<PropertyReferences, PropertyDeclarationSyntax> CreatePropertyReferencesCalculator()
+    public ICalculator<IEnumerable<ReferenceInstance>, PropertyDeclarationSyntax> CreatePropertyReferencesCalculator()
     {
         return new ReferencesCalculator(warningRegistry, compilation);
     }

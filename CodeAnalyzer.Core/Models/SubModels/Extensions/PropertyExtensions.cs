@@ -14,9 +14,4 @@ public static class PropertyExtensions
     {
         return new PropertyLength(propertyValue.Get, propertyValue.Set);
     }
-
-    public static PropertyReferences ToReferenceDto(this IPropertyValue<IEnumerable<ReferenceInstance>> propertyValue)
-    {
-        return new PropertyReferences(propertyValue.Get, propertyValue.Set);
-    }
 }
