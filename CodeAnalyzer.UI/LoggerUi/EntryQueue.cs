@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using CodeAnalyzer.UI.LoggerUi.Dtos;
 
 namespace CodeAnalyzer.UI.LoggerUi;
@@ -22,11 +23,14 @@ internal sealed class EntryQueue
         return _queue.TryDequeue(out _);
     }
 
-    public void Register(LogEntry entry)
+    public void Register(LogEntry entry, Collection<LogEntry> collection)
     {
         if (_queue.Count > 0)
         {
             _queue.Peek().AddChild(entry);
+            return;
         }
+        
+        collection.Add(entry);
     }
 }

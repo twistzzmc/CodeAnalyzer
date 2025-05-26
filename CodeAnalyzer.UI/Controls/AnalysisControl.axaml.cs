@@ -12,7 +12,9 @@ using CodeAnalyzer.Analyzer.Results;
 using CodeAnalyzer.Core.Logging.Interfaces;
 using CodeAnalyzer.Core.Models;
 using CodeAnalyzer.Parser;
-using CodeAnalyzer.UI.AnalysisLoggers;
+using CodeAnalyzer.UI.Analysis;
+using CodeAnalyzer.UI.Analysis.Loggers;
+using CodeAnalyzer.UI.Base;
 using CodeAnalyzer.UI.Interfaces;
 using CodeAnalyzer.UI.LoggerUi.Builders.ModelEntryBuilders;
 using CodeAnalyzer.UI.LoggerUi.Interfaces;
@@ -21,8 +23,6 @@ namespace CodeAnalyzer.UI.Controls;
 
 public partial class AnalysisControl : UserControl
 {
-    private sealed record ClassModelResult(bool IsSuccess, IEnumerable<ClassModel> Models);
-    
     public static readonly StyledProperty<IWarningRegistry> WarningRegistryProperty =
         AvaloniaProperty.Register<AnalysisControl, IWarningRegistry>(nameof(WarningRegistry));
 
@@ -34,6 +34,9 @@ public partial class AnalysisControl : UserControl
     
     public static readonly StyledProperty<ILogger> LoggerProperty =
         AvaloniaProperty.Register<AnalysisControl, ILogger>(nameof(Logger));
+    
+    private readonly AsyncCodeReader _codeReader = new();
+    private readonly AsyncAnalyzerHelper _analyzerHelper = new();
 
     public IWarningRegistry WarningRegistry
     {
@@ -64,35 +67,13 @@ public partial class AnalysisControl : UserControl
         InitializeComponent();
     }
 
-    private async void AnalyzeTooLongMethods_OnClick(object? sender, RoutedEventArgs e)
+    private async void AnalyzeGodObjects_OnClick(object? sender, RoutedEventArgs e)
     {
-        AnalyzeTooLongMethods.IsEnabled = false;
+        ChangeButtonsEnable(false);
 
         try
         {
-            await Task.Run(async () =>
-            {
-                List<ClassModel> models = (await Parse()).ToList();
-
-                List<MethodResultDto> mtlResults = [];
-                List<GodObjectResultDto> godObjectResults = [];
-
-                MtlAnalyzer mtlAnalyzer = new();
-                GodObjectAnalyzer godObjectAnalyzer = new(models);
-
-                ILoggerUi resultLogger = await GetResultLogger();
-                
-                foreach (ClassModel model in models)
-                {
-                    resultLogger.AddEntry(new ClassEntryBuilder().Build(model));
-
-                    mtlResults.AddRange(mtlAnalyzer.Analyze(model.Methods));
-                    godObjectResults.Add(godObjectAnalyzer.Analyze(model));
-                }
-                
-                MethodTooLongLogger.Log(resultLogger, mtlResults);
-                new GodObjectLogger(resultLogger).Log(godObjectResults);
-            });
+            await _analyzerHelper.RunGodObjectAnalysis(ResultLogger);
         }
         catch (Exception ex)
         {
@@ -100,60 +81,63 @@ public partial class AnalysisControl : UserControl
         }
         finally
         {
-            AnalyzeTooLongMethods.IsEnabled = true;
+            ChangeButtonsEnable(true);
+        }
+    }
+
+    private async void AnalyzeLoadedFiles_OnClick(object? sender, RoutedEventArgs e)
+    {
+        ChangeButtonsEnable(false);
+
+        try
+        {
+            IEnumerable<string> codes = await _codeReader.ReadCode(CodePathProvider);
+            await _analyzerHelper.ParseCode(WarningRegistry, Logger, codes);
+            await _analyzerHelper.LogModels(ResultLogger);
+        }
+        catch (Exception ex)
+        {
+            ResultLogger.AddEntry(ex);
+        }
+        finally
+        {
+            ChangeButtonsEnable(true);
+        }
+    }
+
+    private async void AnalyzeTooLongMethods_OnClick(object? sender, RoutedEventArgs e)
+    {
+        ChangeButtonsEnable(false);
+
+        try
+        {
+            await _analyzerHelper.RunMtlAnalysis(ResultLogger);
+        }
+        catch (Exception ex)
+        {
+            ResultLogger.AddEntry(ex);
+        }
+        finally
+        {
+            ChangeButtonsEnable(true);
         }
     }
 
     private async Task<IEnumerable<ClassModel>> Parse()
     {
-        ClassModelResult fileModels = await TryParseFile();
-        if (fileModels.IsSuccess)
-        {
-            return fileModels.Models;
-        }
-
-        ClassModelResult folderModels = await TryParseFolder();
-        return folderModels.Models;
-    } 
-
-    private async Task<ClassModelResult> TryParseFile()
-    {
         ICodePathProvider codePathProvider = await GetCodePathProvider();
-        string filePath = (await GetCodePathProvider()).ProvideFile();
-
-        if (string.IsNullOrEmpty(filePath))
-        {
-            return new ClassModelResult(false, []);
-        }
-        
         IWarningRegistry warningRegistry = await GetWarningRegistry();
         ILogger logger = await GetLogger();
         
-        string code = await File.ReadAllTextAsync(filePath);
-        return new ClassModelResult(true, CodeParser.Parse(warningRegistry, logger, code));
+        IEnumerable<string> codes = await _codeReader.ReadCode(codePathProvider);
+        return CodeParser.Parse(warningRegistry, logger, codes);
     }
 
-    private async Task<ClassModelResult> TryParseFolder()
+    private void ChangeButtonsEnable(bool enable)
     {
-        string[] excludedFolders = ["obj", "bin", "Tests", "Generated"];
-        string folderPath = (await GetCodePathProvider()).ProvideFolder();
-
-        if (string.IsNullOrEmpty(folderPath))
-        {
-            return new ClassModelResult(false, []);
-        }
-        
-        string[] files = Directory.GetFiles(folderPath, "*.cs", SearchOption.AllDirectories)
-            .Where(path => !excludedFolders.Any(folder =>
-                    path.Split(Path.DirectorySeparatorChar)
-                        .Contains(folder)))
-            .ToArray();
-
-        IWarningRegistry warningRegistry = await GetWarningRegistry();
-        ILogger logger = await GetLogger();
-        
-        IEnumerable<string> codes = files.Select(File.ReadAllText);
-        return new ClassModelResult(true, CodeParser.Parse(warningRegistry, logger, codes));
+        AnalyzeLoadedFiles.IsEnabled = enable;
+        AnalyzeTooLongMethods.IsEnabled = enable;
+        AnalyzeGodObjects.IsEnabled = enable;
     }
 
     private async Task<IWarningRegistry> GetWarningRegistry()

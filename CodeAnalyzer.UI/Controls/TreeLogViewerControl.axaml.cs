@@ -2,7 +2,6 @@ using System;
 using System.Collections.ObjectModel;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.Threading;
 using CodeAnalyzer.UI.LoggerUi.Dtos;
 using CodeAnalyzer.UI.LoggerUi.Interfaces;
 using CodeAnalyzer.Core.Logging.Interfaces;
@@ -33,36 +32,31 @@ public partial class TreeLogViewerControl : UserControl, ILoggerUi, ILogger
     public void Success(string message, params object[] messageParameters)
     {
         LogEntry entry = new(string.Format(message, messageParameters), LogPriority.Success);
-        // AddEntry(entry);
-        _queue.Register(entry);
+        _queue.Register(entry, Entries);
     }
 
     public void Info(string message, params object[] messageParameters)
     {
         LogEntry entry = new(string.Format(message, messageParameters), LogPriority.Info);
-        // AddEntry(entry);
-        _queue.Register(entry);
+        _queue.Register(entry, Entries);
     }
 
     public void Warning(string message, params object[] messageParameters)
     {
         LogEntry entry = new(string.Format(message, messageParameters), LogPriority.Warning);
-        // AddEntry(entry);
-        _queue.Register(entry);
+        _queue.Register(entry, Entries);
     }
 
     public void Error(string message, params object[] messageParameters)
     {
         LogEntry entry = new(string.Format(message, messageParameters), LogPriority.Error);
-        // AddEntry(entry);
-        _queue.Register(entry);
+        _queue.Register(entry, Entries);
     }
 
     public void Exception(Exception ex)
     {
         LogEntry entry = new(ex);
-        // AddEntry(entry);
-        _queue.Register(entry);
+        _queue.Register(entry, Entries);
     }
 
     public void CloseLevel()
@@ -75,8 +69,7 @@ public partial class TreeLogViewerControl : UserControl, ILoggerUi, ILogger
 
     public void AddEntry(LogEntry entry)
     {
-        Dispatcher.UIThread.InvokeAsync(() => Entries.Add(entry));
-        // Entries.Add(entry);
+        Entries.Add(entry);
     }
 
     public void AddEntry(string message)

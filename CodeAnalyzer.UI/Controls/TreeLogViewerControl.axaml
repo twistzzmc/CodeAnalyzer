@@ -13,7 +13,14 @@
                 <TreeDataTemplate
                     DataType="{x:Type dtos:LogEntry}"
                     ItemsSource="{Binding Children}">
-                    <TextBlock Text="{Binding Title}" />
+                    <StackPanel Orientation="Horizontal" Spacing="5">
+                        <!-- Zielone kółko -->
+                        <Ellipse Width="10" Height="10" Fill="Green" VerticalAlignment="Center"
+                                 IsVisible="{Binding IsSuccess}" />
+
+                        <!-- Tekst logu -->
+                        <TextBlock Text="{Binding Title}" />
+                    </StackPanel>
                 </TreeDataTemplate>
             </TreeView.DataTemplates>
         </TreeView>

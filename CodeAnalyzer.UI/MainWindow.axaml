@@ -11,11 +11,13 @@
     <Grid Margin="10" RowDefinitions="Auto,*" >
         <StackPanel Orientation="Vertical" Grid.Row="0" Spacing="5">
             <controls:CodePickerControl x:Name="CodePicker" />
+            <Border Height="1" Background="Black" Margin="0,5"/>
             <controls:AnalysisControl x:Name="Analysis"
                                       WarningRegistry="{Binding WarningRegistry}" 
                                       CodePathProvider="{Binding #CodePicker}"
                                       ResultLogger="{Binding #ResultLogViewer}"
                                       Logger="{Binding #ActiveLogViewer}" />
+            <Border Height="1" Background="Black" Margin="0,5"/>
         </StackPanel>
         <TabControl Grid.Row="1">
             <TabItem Header="Bieżące logi">

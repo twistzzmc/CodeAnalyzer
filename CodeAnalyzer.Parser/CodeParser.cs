@@ -42,6 +42,8 @@ public class CodeParser(IWarningRegistry warningRegistry, ILogger logger)
                 logger.Info("Chodzenie po drzewie {0}", tree.Length);
                 walker.Visit(tree.GetRoot());
             }
+            
+            logger.Success("Pomyślnie udało się przejść po drzewie");
         }
         finally
         {

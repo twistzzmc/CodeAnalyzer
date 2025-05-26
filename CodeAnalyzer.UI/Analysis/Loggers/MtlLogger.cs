@@ -7,10 +7,12 @@ using CodeAnalyzer.UI.LoggerUi.Builders;
 using CodeAnalyzer.UI.LoggerUi.Dtos;
 using CodeAnalyzer.UI.LoggerUi.Interfaces;
 
-namespace CodeAnalyzer.UI.AnalysisLoggers;
+namespace CodeAnalyzer.UI.Analysis.Loggers;
 
-internal sealed class MethodTooLongLogger(ILoggerUi logger)
+internal sealed class MtlLogger(ILoggerUi logger)
 {
+    private LogEntry? _mainEntry;
+    
     public void Log(IEnumerable<MethodResultDto> results)
     {
         List<MethodResultDto> resultList = results
@@ -23,8 +25,9 @@ internal sealed class MethodTooLongLogger(ILoggerUi logger)
             logger.AddEntry("Nie znaleziono zbyt długich metod");
             return;
         }
-        
-        logger.AddEntry("Znalezione metody, które są zbyt długie:");
+
+        _mainEntry = new LogEntry("Znalezione metody, które są zbyt długie:");
+        logger.AddEntry(_mainEntry);
         resultList
             .Where(result => result.Certainty == IssueCertainty.Problem)
             .ToList()
@@ -38,7 +41,7 @@ internal sealed class MethodTooLongLogger(ILoggerUi logger)
 
     public static void Log(ILoggerUi logger, IEnumerable<MethodResultDto> results)
     {
-        new MethodTooLongLogger(logger).Log(results);
+        new MtlLogger(logger).Log(results);
     }
 
     private void LogProblem(MethodResultDto result)
@@ -50,7 +53,7 @@ internal sealed class MethodTooLongLogger(ILoggerUi logger)
                 .WithChild("Złożoność cyklometryczna: {method.CyclomaticComplexity}")
                 .WithChild("Zaleca się podzielić metode na kilka mniejszych")
                 .Build();
-        logger.AddEntry(log);
+        _mainEntry?.AddChild(log);
     }
 
     private void LogWarning(MethodResultDto result)
@@ -62,6 +65,6 @@ internal sealed class MethodTooLongLogger(ILoggerUi logger)
             .WithChild("Złożoność cyklometryczna: {method.CyclomaticComplexity}")
             .WithChild("Podzielenie metody może pozytywnie wpłynąć na czytelność kodu")
             .Build();
-        logger.AddEntry(log);
+        _mainEntry?.AddChild(log);
     }
 }

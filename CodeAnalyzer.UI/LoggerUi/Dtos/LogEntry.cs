@@ -10,14 +10,18 @@ public sealed class LogEntry : NotifiableProperty
 {
     private readonly ObservableCollection<LogEntry> _children = [];
     private bool _isExpanded = true;
+    private bool _isSuccess = false;
+    private string _title = string.Empty;
+
+    public static LogEntry Empty => new("Brak danych");
     
-    public string Title { get; set; } = string.Empty;
+    public string Title { get => _title; set => SetField(ref _title, value); }
     public LogPriority Priority { get; } = LogPriority.Info;
     
     public int WarningCount { get; private set; }
     public int ErrorCount { get; private set; }
     public int ExceptionCount { get; private set; }
-    public bool IsSuccess { get; private set; }
+    public bool IsSuccess { get => _isSuccess; set => SetField(ref _isSuccess, value); }
 
     public IReadOnlyList<LogEntry> Children => _children;
     public bool IsExpanded { get => _isExpanded; set => SetField(ref _isExpanded, value); }
@@ -66,5 +70,10 @@ public sealed class LogEntry : NotifiableProperty
         }
         
         _children.Add(child);
+    }
+
+    public void ClearChildren()
+    {
+        _children.Clear();
     }
 }

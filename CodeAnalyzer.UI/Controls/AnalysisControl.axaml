@@ -1,12 +1,19 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="" d:DesignHeight=""
              x:Class="CodeAnalyzer.UI.Controls.AnalysisControl">
-    <StackPanel>
-        <Button x:Name="AnalyzeTooLongMethods"
-                Content="Szukaj zbyt długich metod"
-                Click="AnalyzeTooLongMethods_OnClick" />
+    <StackPanel Spacing="10">
+        <Button x:Name="AnalyzeLoadedFiles"
+                Content="Analizuj wczytane pliki"
+                Click="AnalyzeLoadedFiles_OnClick" />
+
+        <StackPanel Orientation="Horizontal" Spacing="10">
+            <Button x:Name="AnalyzeTooLongMethods"
+                    Content="Szukaj zbyt długich metod"
+                    Click="AnalyzeTooLongMethods_OnClick" />
+
+            <Button x:Name="AnalyzeGodObjects"
+                    Content="Szukaj obiektów &quot;Bóg&quot;"
+                    Click="AnalyzeGodObjects_OnClick" />
+        </StackPanel>
     </StackPanel>
 </UserControl>
