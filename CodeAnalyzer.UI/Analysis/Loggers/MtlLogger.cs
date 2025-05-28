@@ -13,9 +13,9 @@ internal sealed class MtlLogger(ILoggerUi logger)
 {
     private LogEntry? _mainEntry;
     
-    public void Log(IEnumerable<MethodResultDto> results)
+    public void Log(IEnumerable<MtlResultDto> results)
     {
-        List<MethodResultDto> resultList = results
+        List<MtlResultDto> resultList = results
             .Where(result => result.IssueType == AnalysisIssueType.MethodTooLong)
             .Where(result => result.Certainty != IssueCertainty.Info)
             .ToList();
@@ -39,12 +39,12 @@ internal sealed class MtlLogger(ILoggerUi logger)
             .ForEach(LogWarning);
     }
 
-    public static void Log(ILoggerUi logger, IEnumerable<MethodResultDto> results)
+    public static void Log(ILoggerUi logger, IEnumerable<MtlResultDto> results)
     {
         new MtlLogger(logger).Log(results);
     }
 
-    private void LogProblem(MethodResultDto result)
+    private void LogProblem(MtlResultDto result)
     {
         MethodModel method = result.Model;
         LogEntry log = new SimpleLogEntryBuilder($"Metoda {method.Identifier.FullName} jest za duża")
@@ -56,7 +56,7 @@ internal sealed class MtlLogger(ILoggerUi logger)
         _mainEntry?.AddChild(log);
     }
 
-    private void LogWarning(MethodResultDto result)
+    private void LogWarning(MtlResultDto result)
     {
         MethodModel method = result.Model;
         LogEntry log = new SimpleLogEntryBuilder($"Metoda {method.Identifier.FullName} może być za duża")

@@ -60,7 +60,7 @@ internal sealed class AsyncAnalyzerHelper
         await Task.Run(() =>
         {
             MtlAnalyzer mtlAnalyzer = new();
-            List<MethodResultDto> mtlAnalysisResults = [];
+            List<MtlResultDto> mtlAnalysisResults = [];
             foreach (ClassModelResult model in _results)
             {
                 mtlAnalysisResults.AddRange(mtlAnalyzer.Analyze(model.Model.Methods));
