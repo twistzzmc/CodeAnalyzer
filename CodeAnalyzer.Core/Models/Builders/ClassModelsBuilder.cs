@@ -26,6 +26,11 @@ public sealed class ClassModelsBuilder
         AddRegistry(field.Identifier.NamespaceText, classBuilder => classBuilder.AddField(field));
     }
 
+    public void RegisterCbo(IdentifierDto identifier, int cbo)
+    {
+        AddRegistry(identifier.NamespaceText, classBuilder => classBuilder.AddCbo(identifier, cbo));
+    }
+
     public IEnumerable<ClassModel> Build()
     {
         return _namespaceToBuilder.Select(kvp => kvp.Value.Build());

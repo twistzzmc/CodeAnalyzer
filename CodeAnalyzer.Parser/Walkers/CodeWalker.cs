@@ -14,6 +14,7 @@ internal sealed class CodeWalker(ICollectorFactory collectorFactory, CSharpCompi
 {
     private readonly IdentifierCreator _identifierCreator = new(collectorFactory.WarningRegistry);
     private readonly ClassModelsBuilder _builder = new();
+    private readonly CboWalker _cboWalker = new();
     
     public CodeWalker(IWarningRegistry warningRegistry, CSharpCompilation compilation)
         : this(new CollectorFactory(warningRegistry), compilation)
@@ -21,12 +22,18 @@ internal sealed class CodeWalker(ICollectorFactory collectorFactory, CSharpCompi
 
     public IEnumerable<ClassModel> CollectClassModels()
     {
+        foreach (KeyValuePair<IdentifierDto, int> cboKvp in _cboWalker.GetCboMap())
+        {
+            _builder.RegisterCbo(cboKvp.Key, cboKvp.Value);
+        }
+        
         return _builder.Build();
     }
     
     public override void VisitClassDeclaration(ClassDeclarationSyntax node)
     {
         IdentifierDto classIdentifier = _identifierCreator.Create(node.Identifier.Text, node);
+        _cboWalker.EnterClass(classIdentifier, node, compilation);
         _builder.RegisterClass(classIdentifier);
         base.VisitClassDeclaration(node);
     }
@@ -64,5 +71,17 @@ internal sealed class CodeWalker(ICollectorFactory collectorFactory, CSharpCompi
         }
         
         base.VisitFieldDeclaration(node);
+    }
+
+    public override void VisitObjectCreationExpression(ObjectCreationExpressionSyntax node)
+    {
+        _cboWalker.AddDependency(node.Type);
+        base.VisitObjectCreationExpression(node);
+    }
+
+    public override void VisitIdentifierName(IdentifierNameSyntax node)
+    {
+        _cboWalker.AddDependency(node);
+        base.VisitIdentifierName(node);
     }
 }

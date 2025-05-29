@@ -1,6 +1,8 @@
 using System.Text;
 using CodeAnalyzer.Core.Identifiers;
 using CodeAnalyzer.Core.Models.Interfaces;
+using CodeAnalyzer.Core.Models.Stats;
+using CodeAnalyzer.Core.Models.SubModels;
 
 namespace CodeAnalyzer.Core.Models;
 
@@ -15,4 +17,6 @@ public class ClassModel(
     public IReadOnlyList<MethodModel> Methods => methods.ToList();
     public IReadOnlyList<PropertyModel> Properties => properties.ToList();
     public IReadOnlyList<FieldModel> Fields => fields.ToList();
+
+    public Statistics Stats { get; } = new();
 }

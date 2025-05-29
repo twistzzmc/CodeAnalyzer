@@ -8,4 +8,5 @@ public sealed record GodObjectResultDto(
     ClassModel Model,
     AnalysisIssueType IssueType,
     IssueCertainty Certainty,
-    double percentageOfUsage) : IAnalysisResult<ClassModel>;
+    double PercentageOfUsage,
+    IEnumerable<ClassModel> ReferenceClasses) : IAnalysisResult<ClassModel>;

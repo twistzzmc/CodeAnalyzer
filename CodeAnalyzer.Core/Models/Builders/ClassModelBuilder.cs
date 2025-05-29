@@ -7,6 +7,7 @@ public class ClassModelBuilder
     private readonly List<MethodModel> _methods = [];
     private readonly List<PropertyModel> _properties = [];
     private readonly List<FieldModel> _fields = [];
+    private int? _cbo;
     private IdentifierDto? _identifier;
 
     public ClassModelBuilder WithIdentifier(IdentifierDto identifier)
@@ -33,9 +34,22 @@ public class ClassModelBuilder
         return this;
     }
 
+    public ClassModelBuilder AddCbo(IdentifierDto identifier, int cbo)
+    {
+        _cbo = cbo;
+        return this;
+    }
+
     public ClassModel Build()
     {
         ArgumentNullException.ThrowIfNull(_identifier, nameof(_identifier));
-        return new ClassModel(_identifier, _methods, _properties, _fields);
+        ClassModel model = new(_identifier, _methods, _properties, _fields);
+
+        if (_cbo.HasValue)
+        {
+            model.Stats.Cbo = _cbo.Value;
+        }
+
+        return model;
     }
 }

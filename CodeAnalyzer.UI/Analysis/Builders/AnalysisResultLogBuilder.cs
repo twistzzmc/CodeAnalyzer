@@ -8,6 +8,6 @@ internal sealed class AnalysisResultLogBuilder : ILogBuilder<GodObjectResultDto>
 {
     public LogEntry Build(GodObjectResultDto source)
     {
-        return new LogEntry($"[{source.Certainty.ToString()}] Obiekt bóg: {source.percentageOfUsage}");
+        return new LogEntry($"[{source.Certainty.ToString()}] Obiekt bóg: {source.PercentageOfUsage}");
     }
 }
