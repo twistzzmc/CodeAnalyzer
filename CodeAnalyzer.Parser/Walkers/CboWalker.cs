@@ -21,16 +21,8 @@ internal sealed class CboWalker
             x => GetCbo(x.Key));
     }
 
-    public void EnterClass(IdentifierDto classIdentifier, ClassDeclarationSyntax node, CSharpCompilation compilation)
+    public void EnterClass(IdentifierDto classIdentifier, SemanticModel semanticModel, INamedTypeSymbol classSymbol)
     {
-        SemanticModel semanticModel = compilation.GetSemanticModel(node.SyntaxTree);
-        INamedTypeSymbol? classSymbol = semanticModel.GetDeclaredSymbol(node);
-
-        if (classSymbol is null)
-        {
-            return;
-        }
-        
         _semanticModel = semanticModel;
         _currentClass = classSymbol;
 

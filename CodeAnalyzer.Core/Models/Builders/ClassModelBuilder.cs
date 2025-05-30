@@ -8,6 +8,8 @@ public class ClassModelBuilder
     private readonly List<PropertyModel> _properties = [];
     private readonly List<FieldModel> _fields = [];
     private int? _cbo;
+    private int? _atfd;
+    private double? _tcc;
     private IdentifierDto? _identifier;
 
     public ClassModelBuilder WithIdentifier(IdentifierDto identifier)
@@ -34,9 +36,21 @@ public class ClassModelBuilder
         return this;
     }
 
-    public ClassModelBuilder AddCbo(IdentifierDto identifier, int cbo)
+    public ClassModelBuilder AddCbo(int cbo)
     {
         _cbo = cbo;
+        return this;
+    }
+
+    public ClassModelBuilder AddAtfd(int atfd)
+    {
+        _atfd = atfd;
+        return this;
+    }
+
+    public ClassModelBuilder AddTcc(double tcc)
+    {
+        _tcc = tcc;
         return this;
     }
 
@@ -48,6 +62,16 @@ public class ClassModelBuilder
         if (_cbo.HasValue)
         {
             model.Stats.Cbo = _cbo.Value;
+        }
+
+        if (_atfd.HasValue)
+        {
+            model.Stats.Atfd = _atfd.Value;
+        }
+
+        if (_tcc.HasValue)
+        {
+            model.Stats.Tcc = _tcc.Value;
         }
 
         return model;

@@ -28,7 +28,17 @@ public sealed class ClassModelsBuilder
 
     public void RegisterCbo(IdentifierDto identifier, int cbo)
     {
-        AddRegistry(identifier.NamespaceText, classBuilder => classBuilder.AddCbo(identifier, cbo));
+        AddRegistry(identifier.NamespaceText, classBuilder => classBuilder.AddCbo(cbo));
+    }
+
+    public void RegisterAtfd(IdentifierDto identifier, int atfd)
+    {
+        AddRegistry(identifier.NamespaceText, classBuilder => classBuilder.AddAtfd(atfd));
+    }
+
+    public void RegisterTcc(IdentifierDto identifier, double tcc)
+    {
+        AddRegistry(identifier.NamespaceText, classBuilder => classBuilder.AddTcc(tcc));
     }
 
     public IEnumerable<ClassModel> Build()
