@@ -17,9 +17,12 @@ internal sealed class ReferenceEntryBuilder(ReferenceEntryBuilder.ReferenceType 
         Set
     }
     
+    public string Key => "Reference";
+    
     public LogEntry Build(IReadOnlyList<ReferenceInstance> model)
     {    
         SimpleLogEntryBuilder referencesBuilder = new(GetTitle(model.Count));
+        referencesBuilder.WithKey(Key);
         model.ToList().ForEach(r => referencesBuilder.WithChild($"{r.Namespace} ({r.LineNumber})"));
         return referencesBuilder.Build();
     }

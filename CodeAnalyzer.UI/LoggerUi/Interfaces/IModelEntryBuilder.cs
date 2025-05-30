@@ -5,5 +5,7 @@ namespace CodeAnalyzer.UI.LoggerUi.Interfaces;
 
 internal interface IModelEntryBuilder<in TModel>
 {
+    string Key { get; }
+    
     LogEntry Build(TModel model);
 }

@@ -23,6 +23,7 @@ public sealed class GodObjectAnalyzer(IEnumerable<ClassModel> allClassModels)
     public GodObjectResultDto Analyze(ClassModel model)
     {
         new FanInCalculator(allClassModels).Calculate(model);
+        new WmpcCalculator().Calculate(model);
         
         IssueCertainty issueCertainty = model.Stats.FanIn.FanInPercentage > Problem.PercentageOfUsage
             ? IssueCertainty.Problem

@@ -1,10 +1,8 @@
 ﻿using CodeAnalyzer.Core.Logging.Interfaces;
 using CodeAnalyzer.Core.Models;
-using CodeAnalyzer.Core.Models.Builders;
 using CodeAnalyzer.Parser.Walkers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace CodeAnalyzer.Parser;
 
@@ -36,14 +34,19 @@ public class CodeParser(IWarningRegistry warningRegistry, ILogger logger)
 
         try
         {
-            logger.OpenLevel("Przeszukiwanie drzew. Ilość {0}", compilation.SyntaxTrees.Length);
+            IProgress progress = logger.OpenProgress(compilation.SyntaxTrees.Length, "Przeszukiwanie drzew");
             foreach (SyntaxTree tree in compilation.SyntaxTrees)
             {
-                logger.Info("Chodzenie po drzewie {0}", tree.Length);
+                logger.Info(progress, "Chodzenie po drzewie {0}", tree.Length);
                 walker.Visit(tree.GetRoot());
             }
-            
+
             logger.Success("Pomyślnie udało się przejść po drzewie");
+        }
+        catch (Exception e)
+        {
+            logger.Exception(e);
+            throw;
         }
         finally
         {

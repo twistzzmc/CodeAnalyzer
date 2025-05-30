@@ -6,7 +6,6 @@ using CodeAnalyzer.Analyzer.Results;
 using CodeAnalyzer.Core.Logging.Interfaces;
 using CodeAnalyzer.Core.Models;
 using CodeAnalyzer.Parser;
-using CodeAnalyzer.UI.Analysis.Builders;
 using CodeAnalyzer.UI.Analysis.Loggers;
 using CodeAnalyzer.UI.LoggerUi.Builders.ModelEntryBuilders;
 using CodeAnalyzer.UI.LoggerUi.Dtos;
@@ -17,7 +16,6 @@ namespace CodeAnalyzer.UI.Analysis;
 internal sealed class AsyncAnalyzerHelper
 {
     private readonly ClassEntryBuilder _classEntryBuilder = new();
-    private readonly AnalysisResultLogBuilder _analysisResultLogBuilder = new();
     private readonly List<ClassModelResult> _results = [];
     private readonly LogEntry _classEntry = new("Liczba znalezionych klas: 0");
 
@@ -77,7 +75,7 @@ internal sealed class AsyncAnalyzerHelper
             GodObjectAnalyzer godObjectAnalyzer = new(_results.Select(r => r.Model));
             foreach (ClassModelResult model in _results)
             {
-                model.AddGodObjectAnalysis(godObjectAnalyzer, _analysisResultLogBuilder);
+                model.AddGodObjectAnalysis(godObjectAnalyzer);
             }
 
             GodObjectLogger godObjectLogger = new(logger);

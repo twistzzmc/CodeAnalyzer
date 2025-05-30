@@ -1,6 +1,5 @@
 using CodeAnalyzer.Core.Identifiers;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace CodeAnalyzer.Parser.Walkers;
@@ -9,16 +8,18 @@ internal sealed class CboWalker
 {
     private readonly Dictionary<INamedTypeSymbol, HashSet<INamedTypeSymbol>> _dependencies
         = new(SymbolEqualityComparer.Default);
-    private readonly Dictionary<IdentifierDto, INamedTypeSymbol> _classMap = new();
-    
+
+    private readonly Dictionary<IdentifierDto, INamedTypeSymbol> _classMap
+        = new();
+
     private SemanticModel? _semanticModel;
     private INamedTypeSymbol? _currentClass;
 
     public Dictionary<IdentifierDto, int> GetCboMap()
     {
         return _classMap.ToDictionary(
-            x => x.Key,
-            x => GetCbo(x.Key));
+            entry => entry.Key,
+            entry => GetCbo(entry.Key));
     }
 
     public void EnterClass(IdentifierDto classIdentifier, SemanticModel semanticModel, INamedTypeSymbol classSymbol)
@@ -35,15 +36,21 @@ internal sealed class CboWalker
 
     public void AddDependency(IdentifierNameSyntax node)
     {
-        ISymbol? symbol = _semanticModel?.GetSymbolInfo(node).Symbol;
+        if (_semanticModel == null || node.SyntaxTree != _semanticModel.SyntaxTree)
+        {
+            return;
+        }
+
+        ISymbol? symbol = _semanticModel.GetSymbolInfo(node).Symbol;
         AddDependency(symbol);
     }
 
     public void AddDependency(TypeSyntax typeSyntax)
     {
-        if (_semanticModel == null) return;
+        if (_semanticModel == null || typeSyntax.SyntaxTree != _semanticModel.SyntaxTree)
+            return;
 
-        INamedTypeSymbol? symbol = ModelExtensions.GetSymbolInfo(_semanticModel, typeSyntax).Symbol as INamedTypeSymbol;
+        INamedTypeSymbol? symbol = _semanticModel.GetSymbolInfo(typeSyntax).Symbol as INamedTypeSymbol;
         AddDependency(symbol);
     }
 
@@ -53,14 +60,16 @@ internal sealed class CboWalker
         {
             AddDependency(symbol.ContainingType);
         }
+        else if (symbol is INamedTypeSymbol namedType)
+        {
+            AddDependency(namedType);
+        }
     }
 
     private void AddDependency(INamedTypeSymbol? targetType)
     {
         if (_currentClass == null || targetType == null)
-        {
             return;
-        }
 
         if (!SymbolEqualityComparer.Default.Equals(targetType, _currentClass))
         {
@@ -70,11 +79,9 @@ internal sealed class CboWalker
 
     private int GetCbo(IdentifierDto classIdentifier)
     {
-        if (!_classMap.TryGetValue(classIdentifier, out INamedTypeSymbol? classSymbol))
-        {
-            return 0;
-        }
-        
-        return _dependencies.TryGetValue(classSymbol, out HashSet<INamedTypeSymbol>? set) ? set.Count : 0;
+        return _classMap.TryGetValue(classIdentifier, out INamedTypeSymbol? classSymbol) &&
+               _dependencies.TryGetValue(classSymbol, out HashSet<INamedTypeSymbol>? set)
+            ? set.Count
+            : 0;
     }
 }

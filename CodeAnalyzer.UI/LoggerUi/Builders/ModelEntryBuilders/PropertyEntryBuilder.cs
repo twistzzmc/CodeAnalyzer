@@ -7,9 +7,12 @@ namespace CodeAnalyzer.UI.LoggerUi.Builders.ModelEntryBuilders;
 
 internal sealed class PropertyEntryBuilder : IModelEntryBuilder<PropertyModel>
 {
+    public string Key => "Property";
+    
     public LogEntry Build(PropertyModel model)
     {
         return new SimpleLogEntryBuilder(model.Identifier)
+            .WithKey(Key)
             .WithChild($"Modyfikatory dostępu: {model.AccessModifierType}")
             .WithChild($"Typ: {model.Type}")
             .WithChild($"Linia początku metody: {model.LineStart}")

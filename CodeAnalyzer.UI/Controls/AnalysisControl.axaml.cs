@@ -77,7 +77,7 @@ public partial class AnalysisControl : UserControl
         }
         catch (Exception ex)
         {
-            ResultLogger.AddEntry(ex);
+            Logger.Exception(ex);
         }
         finally
         {
@@ -97,7 +97,7 @@ public partial class AnalysisControl : UserControl
         }
         catch (Exception ex)
         {
-            ResultLogger.AddEntry(ex);
+            Logger.Exception(ex);
         }
         finally
         {
@@ -115,7 +115,7 @@ public partial class AnalysisControl : UserControl
         }
         catch (Exception ex)
         {
-            ResultLogger.AddEntry(ex);
+            Logger.Exception(ex);
         }
         finally
         {

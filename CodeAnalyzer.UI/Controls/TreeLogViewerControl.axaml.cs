@@ -29,6 +29,14 @@ public partial class TreeLogViewerControl : UserControl, ILoggerUi, ILogger
         _queue.Enqueue(entry);
     }
 
+    public IProgress OpenProgress(int total, string title, params object[] titleParameters)
+    {
+        ProgressLogEntry progressEntry = new(total, string.Format(title, titleParameters));
+        AddEntry(progressEntry);
+        _queue.Enqueue(progressEntry);
+        return progressEntry;
+    }
+
     public void Success(string message, params object[] messageParameters)
     {
         LogEntry entry = new(string.Format(message, messageParameters), LogPriority.Success);
@@ -39,6 +47,12 @@ public partial class TreeLogViewerControl : UserControl, ILoggerUi, ILogger
     {
         LogEntry entry = new(string.Format(message, messageParameters), LogPriority.Info);
         _queue.Register(entry, Entries);
+    }
+
+    public void Info(IProgress progress, string message, params object[] messageParameters)
+    {
+        Info(message, messageParameters);
+        progress.Current++;
     }
 
     public void Warning(string message, params object[] messageParameters)

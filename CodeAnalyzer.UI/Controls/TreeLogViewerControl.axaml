@@ -17,6 +17,26 @@
                         <!-- Zielone kółko -->
                         <Ellipse Width="10" Height="10" Fill="Green" VerticalAlignment="Center"
                                  IsVisible="{Binding IsSuccess}" />
+                        
+                        <!-- Żółty kwadrat z liczbą ostrzeżeń -->
+                        <Border Background="Yellow" Width="20" Height="20" CornerRadius="2"
+                                VerticalAlignment="Center"
+                                IsVisible="{Binding HasWarning}">
+                            <TextBlock Text="{Binding WarningCount}" 
+                                       HorizontalAlignment="Center" 
+                                       VerticalAlignment="Center"
+                                       FontWeight="Bold" />
+                        </Border>
+                        
+                        <!-- Czerwony kwadrat z liczbą błędów -->
+                        <Border Background="Red" Width="20" Height="20" CornerRadius="2"
+                                VerticalAlignment="Center"
+                                IsVisible="{Binding HasErrorOrException}">
+                            <TextBlock Text="{Binding ErrorOrExceptionCount}" 
+                                       HorizontalAlignment="Center" 
+                                       VerticalAlignment="Center"
+                                       FontWeight="Bold" />
+                        </Border>
 
                         <!-- Tekst logu -->
                         <TextBlock Text="{Binding Title}" />

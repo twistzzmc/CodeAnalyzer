@@ -29,6 +29,12 @@ internal sealed class SimpleLogEntryBuilder(string title)
         return this;
     }
 
+    public SimpleLogEntryBuilder WithKey(string key)
+    {
+        _entry.Key = key;
+        return this;
+    }
+
     public LogEntry Build()
     {
         return _entry;
