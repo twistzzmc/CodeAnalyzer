@@ -1,4 +1,5 @@
 using CodeAnalyzer.Core.Identifiers;
+using CodeAnalyzer.Core.Models.Stats.Data;
 
 namespace CodeAnalyzer.Core.Models.Builders;
 
@@ -7,9 +8,9 @@ public class ClassModelBuilder
     private readonly List<MethodModel> _methods = [];
     private readonly List<PropertyModel> _properties = [];
     private readonly List<FieldModel> _fields = [];
-    private int? _cbo;
-    private int? _atfd;
-    private double? _tcc;
+    private CboDto? _cbo;
+    private AtfdData? _atfd;
+    private TccDto? _tcc;
     private IdentifierDto? _identifier;
 
     public ClassModelBuilder WithIdentifier(IdentifierDto identifier)
@@ -36,19 +37,19 @@ public class ClassModelBuilder
         return this;
     }
 
-    public ClassModelBuilder AddCbo(int cbo)
+    public ClassModelBuilder AddCbo(CboDto cbo)
     {
         _cbo = cbo;
         return this;
     }
 
-    public ClassModelBuilder AddAtfd(int atfd)
+    public ClassModelBuilder AddAtfd(AtfdData atfd)
     {
         _atfd = atfd;
         return this;
     }
 
-    public ClassModelBuilder AddTcc(double tcc)
+    public ClassModelBuilder AddTcc(TccDto tcc)
     {
         _tcc = tcc;
         return this;
@@ -59,19 +60,19 @@ public class ClassModelBuilder
         ArgumentNullException.ThrowIfNull(_identifier, nameof(_identifier));
         ClassModel model = new(_identifier, _methods, _properties, _fields);
 
-        if (_cbo.HasValue)
+        if (_cbo is not null)
         {
-            model.Stats.Cbo = _cbo.Value;
+            model.Stats.Cbo = _cbo;
         }
 
-        if (_atfd.HasValue)
+        if (_atfd is not null)
         {
-            model.Stats.Atfd = _atfd.Value;
+            model.Stats.Atfd = _atfd;
         }
 
-        if (_tcc.HasValue)
+        if (_tcc is not null)
         {
-            model.Stats.Tcc = _tcc.Value;
+            model.Stats.Tcc = _tcc;
         }
 
         return model;

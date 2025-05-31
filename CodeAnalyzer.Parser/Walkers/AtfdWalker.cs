@@ -1,5 +1,5 @@
+using CodeAnalyzer.Core.Models.Stats.Data;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace CodeAnalyzer.Parser.Walkers;
@@ -38,5 +38,10 @@ internal sealed class AtfdWalker
         }
     }
 
-    public int GetAtfd() => _foreignAccesses.Count;
+    public AtfdData GetAtfd()
+    {
+        return new AtfdData(
+            _foreignAccesses.Count, 
+            _foreignAccesses.Select(fa => fa.ToDisplayString()));
+    }
 }

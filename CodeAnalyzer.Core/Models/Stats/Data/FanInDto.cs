@@ -1,4 +1,4 @@
-namespace CodeAnalyzer.Core.Models.Stats;
+namespace CodeAnalyzer.Core.Models.Stats.Data;
 
 public sealed class FanInDto
 {

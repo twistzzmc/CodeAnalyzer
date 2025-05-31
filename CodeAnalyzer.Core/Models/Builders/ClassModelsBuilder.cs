@@ -1,4 +1,5 @@
 using CodeAnalyzer.Core.Identifiers;
+using CodeAnalyzer.Core.Models.Stats.Data;
 
 namespace CodeAnalyzer.Core.Models.Builders;
 
@@ -26,17 +27,17 @@ public sealed class ClassModelsBuilder
         AddRegistry(field.Identifier.NamespaceText, classBuilder => classBuilder.AddField(field));
     }
 
-    public void RegisterCbo(IdentifierDto identifier, int cbo)
+    public void RegisterCbo(IdentifierDto identifier, CboDto cbo)
     {
         AddRegistry(identifier.FullName, classBuilder => classBuilder.AddCbo(cbo));
     }
 
-    public void RegisterAtfd(IdentifierDto identifier, int atfd)
+    public void RegisterAtfd(IdentifierDto identifier, AtfdData atfd)
     {
         AddRegistry(identifier.FullName, classBuilder => classBuilder.AddAtfd(atfd));
     }
 
-    public void RegisterTcc(IdentifierDto identifier, double tcc)
+    public void RegisterTcc(IdentifierDto identifier, TccDto tcc)
     {
         AddRegistry(identifier.FullName, classBuilder => classBuilder.AddTcc(tcc));
     }

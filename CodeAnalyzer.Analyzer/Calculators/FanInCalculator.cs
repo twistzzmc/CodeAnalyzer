@@ -1,6 +1,7 @@
 using CodeAnalyzer.Analyzer.Interfaces;
 using CodeAnalyzer.Core.Models;
 using CodeAnalyzer.Core.Models.Stats;
+using CodeAnalyzer.Core.Models.Stats.Data;
 
 namespace CodeAnalyzer.Analyzer.Calculators;
 

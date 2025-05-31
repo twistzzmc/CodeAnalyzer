@@ -1,4 +1,5 @@
 using CodeAnalyzer.Core.Identifiers;
+using CodeAnalyzer.Core.Models.Stats.Data;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -15,7 +16,7 @@ internal sealed class CboWalker
     private SemanticModel? _semanticModel;
     private INamedTypeSymbol? _currentClass;
 
-    public Dictionary<IdentifierDto, int> GetCboMap()
+    public Dictionary<IdentifierDto, CboDto> GetCboMap()
     {
         return _classMap.ToDictionary(
             entry => entry.Key,
@@ -77,11 +78,11 @@ internal sealed class CboWalker
         }
     }
 
-    private int GetCbo(IdentifierDto classIdentifier)
+    private CboDto GetCbo(IdentifierDto classIdentifier)
     {
         return _classMap.TryGetValue(classIdentifier, out INamedTypeSymbol? classSymbol) &&
                _dependencies.TryGetValue(classSymbol, out HashSet<INamedTypeSymbol>? set)
-            ? set.Count
-            : 0;
+            ? new CboDto(set.Count, set.Select(nps => nps.ToDisplayString()))
+            : CboDto.Empty;
     }
 }

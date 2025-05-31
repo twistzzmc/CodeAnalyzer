@@ -2,6 +2,7 @@ using CodeAnalyzer.Core.Identifiers;
 using CodeAnalyzer.Core.Logging.Interfaces;
 using CodeAnalyzer.Core.Models;
 using CodeAnalyzer.Core.Models.Builders;
+using CodeAnalyzer.Core.Models.Stats.Data;
 using CodeAnalyzer.Parser.Collectors.Creators;
 using CodeAnalyzer.Parser.Collectors.Factories;
 using CodeAnalyzer.Parser.Collectors.Interfaces;
@@ -25,7 +26,7 @@ internal sealed class CodeWalker(ICollectorFactory collectorFactory, CSharpCompi
 
     public IEnumerable<ClassModel> CollectClassModels()
     {
-        foreach (KeyValuePair<IdentifierDto, int> cboKvp in _cboWalker.GetCboMap())
+        foreach (KeyValuePair<IdentifierDto, CboDto> cboKvp in _cboWalker.GetCboMap())
         {
             _builder.RegisterCbo(cboKvp.Key, cboKvp.Value);
         }
@@ -106,6 +107,7 @@ internal sealed class CodeWalker(ICollectorFactory collectorFactory, CSharpCompi
     public override void VisitIdentifierName(IdentifierNameSyntax node)
     {
         _cboWalker.AddDependency(node);
+        _tccWalker.AnalyzeFieldAccess(node);
         base.VisitIdentifierName(node);
     }
 
