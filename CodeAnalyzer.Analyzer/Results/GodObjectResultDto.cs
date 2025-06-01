@@ -11,5 +11,6 @@ public sealed class GodObjectResultDto : IAnalysisResult<ClassModel>
     public required AnalysisIssueType IssueType { get; init; }
     public required IssueCertainty Certainty { get; init; }
     public required Statistics Stats { get; init; }
-    public required double FanInMedian { get; init; }
+    public required double CertaintyPercent { get; init; }
+    public required bool Marinescu { get; init; }
 }

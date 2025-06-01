@@ -37,7 +37,7 @@ internal sealed class StatsEntryBuilder : IModelEntryBuilder<Statistics>
 
     private static LogEntry BuildFanIn(bool isFanInSet, FanInDto fanIn)
     {
-        LogEntry entry = new($"[{isFanInSet}] FanIn: {fanIn.FanIn} ({fanIn.FanInPercentage}%)");
+        LogEntry entry = new($"[{isFanInSet}] FanIn: {fanIn.FanIn} ({fanIn.FanInPercentage:0.00}%)");
         fanIn.ReferencesClassModels.ToList().ForEach(rcm => entry.AddChild(rcm.Identifier.FullName));
         return entry;
     }
@@ -51,7 +51,7 @@ internal sealed class StatsEntryBuilder : IModelEntryBuilder<Statistics>
     
     private static LogEntry BuildTcc(bool isTccSet, TccDto tcc)
     {
-        LogEntry entry = new($"[{isTccSet}] TCC: {tcc.Tcc}");
+        LogEntry entry = new($"[{isTccSet}] TCC: {tcc.Tcc:0.00}");
         foreach (KeyValuePair<string, IReadOnlyCollection<string>> kvp in tcc.ReferencesInMethods)
         {
             LogEntry methodEntry = new(kvp.Key);

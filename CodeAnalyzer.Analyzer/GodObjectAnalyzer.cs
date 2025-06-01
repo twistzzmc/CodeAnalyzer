@@ -10,18 +10,13 @@ using MathNet.Numerics.Statistics;
 
 namespace CodeAnalyzer.Analyzer;
 
-public sealed class GodObjectAnalyzer
+public sealed class GodObjectAnalyzer(IEnumerable<ClassModel> allClassModels)
     : IAnalyzer<GodObjectConfiguration, GodObjectParameters, ClassModel, GodObjectResultDto>
 {
-    private readonly IEnumerable<ClassModel> _classes;
-    private readonly FanInCalculator _fanInCalculator;
-    private readonly WmpcCalculator _wmpcCalculator;
+    private readonly FanInCalculator _fanInCalculator = new(allClassModels);
+    private readonly WmpcCalculator _wmpcCalculator = new();
     
     private ClassModel? _model;
-    private int _problemScore;
-    private int _warningScore;
-    private bool _isFanInPreprocessed;
-    private double _fanInMedian;
     
     private GodObjectParameters Warning => Configuration.WarningThreshold;
     private GodObjectParameters Problem => Configuration.ProblemThreshold;
@@ -32,39 +27,38 @@ public sealed class GodObjectAnalyzer
         WarningThreshold = GodObjectParameters.DefaultWarning
     };
 
-    public GodObjectAnalyzer(IEnumerable<ClassModel> allClassModels)
-    {
-        _classes = allClassModels;
-        _fanInCalculator = new FanInCalculator(_classes);
-        _wmpcCalculator = new WmpcCalculator();
-    }
-    
     public GodObjectResultDto Analyze(ClassModel model)
     {
         _model = model;
-        _problemScore = 0;
-        _warningScore = 0;
         
         CalculateRemainingStats();
         EnsureAllStatsSet();
-    
-        Score(_model.Stats.Wmpc.Wmpc, Warning.Wmpc, Problem.Wmpc);
-        Score(_model.Stats.Atfd.Atfd, Warning.Atfd, Problem.Atfd);
-        Score(_model.Stats.Cbo.Cbo, Warning.Cbo, Problem.Cbo);
-        Score(_model.Stats.Tcc.Tcc, Warning.Tcc, Problem.Tcc, false);
-        ScoreFanIn();
 
-        IssueCertainty issueCertainty = _problemScore >= 3
+        double score = CalculateGodObjectScore(
+            _model.Stats.Wmpc.Wmpc,
+            _model.Stats.Atfd.Atfd,
+            _model.Stats.Tcc.Tcc,
+            _model.Stats.Cbo.Cbo,
+            _model.Stats.FanIn.FanIn);
+
+        IssueCertainty issueCertainty = score >= 80
             ? IssueCertainty.Problem
-            : _warningScore >= 3 ? IssueCertainty.Warning : IssueCertainty.Info;
-
+            : score >= 60 ? IssueCertainty.Warning : IssueCertainty.Info;
+    
+        bool isMarinescu = IsMarinescu(_model.Stats.Wmpc.Wmpc, _model.Stats.Atfd.Atfd, _model.Stats.Tcc.Tcc);
+        if (!isMarinescu)
+        {
+            issueCertainty = IssueCertainty.Info;
+        }
+        
         return new GodObjectResultDto
         {
             Model = model,
             Certainty = issueCertainty,
             IssueType = AnalysisIssueType.GodObject,
             Stats = model.Stats,
-            FanInMedian = _fanInMedian
+            CertaintyPercent = score,
+            Marinescu = isMarinescu
         };
     }
 
@@ -105,61 +99,30 @@ public sealed class GodObjectAnalyzer
     private void CalculateRemainingStats()
     {
         ArgumentNullException.ThrowIfNull(_model);
-        PreprocessFanIn();
+        _fanInCalculator.Calculate(_model);
         _wmpcCalculator.Calculate(_model);
     }
 
-    private void ScoreFanIn()
+    private static bool IsMarinescu(int wmpc, int atfd, double tcc)
     {
-        ArgumentNullException.ThrowIfNull(_model);
-        double warningThreshold = Warning.FanInMedian * _fanInMedian;
-        double problemThreshold = Problem.FanInMedian * _fanInMedian;
-        Score(_model.Stats.FanIn.FanIn, warningThreshold, problemThreshold);
+        return wmpc >= 47 && atfd > 5 && tcc < 0.33;
     }
-
-    private void Score<T>(T value, T warningThreshold, T problemThreshold, bool expectLesser = true)
-        where T : IComparable<T>
+    
+    private static double CalculateGodObjectScore(int wmc, int atfd, double tcc, int cbo, int ca)
     {
-        ArgumentNullException.ThrowIfNull(_model);
-        int breachValue = expectLesser ? 1 : -1;
-        if (value.CompareTo(warningThreshold) == breachValue)
-        {
-            WarningBreached();
-        }
-        
-        if (value.CompareTo(problemThreshold) == breachValue)
-        {
-            ProblemBreached();
-        }
-    }
+        double normWmc  = Math.Min(1.0, wmc / 60.0);
+        double normAtfd = Math.Min(1.0, atfd / 10.0);
+        double normTcc  = 1.0 - Math.Min(1.0, tcc / 0.33);
+        double normCbo  = Math.Min(1.0, cbo / 20.0);
+        double normCa   = Math.Min(1.0, ca / 15.0);
 
-    private void PreprocessFanIn()
-    {
-        if (_isFanInPreprocessed)
-        {
-            return;
-        }
+        double score = 
+            0.25 * normWmc +
+            0.25 * normAtfd +
+            0.20 * normTcc +
+            0.15 * normCbo +
+            0.15 * normCa;
 
-        _isFanInPreprocessed = true;
-        foreach (ClassModel model in _classes)
-        {
-            _fanInCalculator.Calculate(model);
-        }
-
-        _fanInMedian = _classes
-            .Where(m => m.Type == ClassType.Class)
-            .Select(m => (double)m.Stats.FanIn.FanIn)
-            .Median();
-    }
-
-    private void WarningBreached()
-    {
-        _warningScore++;
-    }
-
-    private void ProblemBreached()
-    {
-        _problemScore++;
-        _warningScore++;
+        return score * 100.0;
     }
 }

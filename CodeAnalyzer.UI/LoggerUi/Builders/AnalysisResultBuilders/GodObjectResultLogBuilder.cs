@@ -27,6 +27,7 @@ internal sealed class GodObjectResultLogBuilder :
         LogEntry mainEntry = new($"Znalezione GodObject: {problemCount + warningCount}");
         LogEntry problemEntry = new($"Liczba znalezionych problemów: {problemCount}");
         LogEntry waringEntry = new($"Liczba znalezionych ostrzeżeń: {warningCount}");
+        LogEntry top10Entry = new("Top 10 klas poniżej progu ostrzeżenia");
 
         foreach (GodObjectResultDto? entry in godObjectResultDtos)
         {
@@ -46,16 +47,27 @@ internal sealed class GodObjectResultLogBuilder :
             }
         }
 
+        godObjectResultDtos
+            .Where(r => r is not null)
+            .Cast<GodObjectResultDto>()
+            .Where(r => r.Certainty == IssueCertainty.Info)
+            .OrderByDescending(r => r.CertaintyPercent)
+            .Take(10)
+            .ToList()
+            .ForEach(r => top10Entry.AddChild(Build(r)));
+
         mainEntry.AddChild(problemEntry);
         mainEntry.AddChild(waringEntry);
+        mainEntry.AddChild(top10Entry);
         return mainEntry;
     }
 
     public LogEntry Build(GodObjectResultDto source)
     {
         LogEntry entry = new($"[{source.Certainty.ToString()}] Obiekt bóg: {source.Model.Identifier.FullName}");
+        entry.AddChild($"Pewność: {source.CertaintyPercent:0.00}%");
+        entry.AddChild($"Czy został spełniony próg Marinescu: {source.Marinescu}");
         entry.AddChild(_statisticsBuilder.Build(source.Stats));
-        entry.AddChild($"Mediana Fan-In: {source.FanInMedian}");
         entry.AddChild(_classEntryBuilder.Build(source.Model));
         return entry;
     }

@@ -6,7 +6,7 @@ public sealed class GodObjectParameters
     private int _cbo;
     private int _atfd;
     private double _tcc;
-    private double _fanInMedian;
+    private double _fanIn;
 
     public int Wmpc
     {
@@ -64,9 +64,9 @@ public sealed class GodObjectParameters
         }
     }
 
-    public double FanInMedian
+    public double FanIn
     {
-        get => _fanInMedian;
+        get => _fanIn;
         set
         {
             if (value < 0)
@@ -74,19 +74,19 @@ public sealed class GodObjectParameters
                 throw new ArgumentOutOfRangeException(nameof(value), value, "Wartość musi być większa od 0");
             }
             
-            _fanInMedian = value;
+            _fanIn = value;
         }
     }
     
-    internal static GodObjectParameters DefaultWarning => new(50, 10, 5, 0.3, 3);
-    internal static GodObjectParameters DefaultProblem => new(75, 14, 10, 0.15, 4);
+    internal static GodObjectParameters DefaultWarning => new(35, 14, 3, 0.33, 10);
+    internal static GodObjectParameters DefaultProblem => new(47, 14, 5, 0.5, 10);
 
-    public GodObjectParameters(int wmpc, int cbo, int atfd, double tcc, double fanInMedian)
+    public GodObjectParameters(int wmpc, int cbo, int atfd, double tcc, double fanIn)
     {
         Wmpc = wmpc;
         Cbo = cbo;
         Atfd = atfd;
         Tcc = tcc;
-        FanInMedian = fanInMedian;
+        FanIn = fanIn;
     }
 }
