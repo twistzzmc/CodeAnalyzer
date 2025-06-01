@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -95,7 +96,12 @@ public partial class TreeLogViewerControl : UserControl, ILoggerUi, ILogger
     {
         AddEntry(new LogEntry(ex));
     }
-    
+
+    public IEnumerable<LogEntry> Collect()
+    {
+        return Entries;
+    }
+
     private void OnClearLogsClicked(object? sender, RoutedEventArgs e)
     {
         Entries.Clear();

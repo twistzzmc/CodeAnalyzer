@@ -18,6 +18,10 @@
                                       ResultLogger="{Binding #ResultLogViewer}"
                                       Logger="{Binding #ActiveLogViewer}" />
             <Border Height="1" Background="Black" Margin="0,5"/>
+            <controls:JsonHandler x:Name="JsonHandler"
+                                  ResultLogger="{Binding #ResultLogViewer}"
+                                  Logger="{Binding #ActiveLogViewer}" />
+            <Border Height="1" Background="Black" Margin="0,5"/>
         </StackPanel>
         <TabControl Grid.Row="1">
             <TabItem Header="Bieżące logi">
