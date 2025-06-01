@@ -1,5 +1,8 @@
 namespace CodeAnalyzer.Core.Models.Stats.Data;
 
+/// <summary>
+/// Afferent Coupling
+/// </summary>
 public sealed class FanInDto
 {
     public required int FanIn { get; init; }

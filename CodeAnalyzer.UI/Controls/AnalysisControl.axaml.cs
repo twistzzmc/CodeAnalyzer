@@ -73,7 +73,7 @@ public partial class AnalysisControl : UserControl
 
         try
         {
-            await _analyzerHelper.RunGodObjectAnalysis(ResultLogger);
+            await _analyzerHelper.RunGodObjectAnalysis(Logger, ResultLogger);
         }
         catch (Exception ex)
         {

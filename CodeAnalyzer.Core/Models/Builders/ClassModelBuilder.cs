@@ -1,4 +1,5 @@
 using CodeAnalyzer.Core.Identifiers;
+using CodeAnalyzer.Core.Models.Enums;
 using CodeAnalyzer.Core.Models.Stats.Data;
 
 namespace CodeAnalyzer.Core.Models.Builders;
@@ -9,13 +10,15 @@ public class ClassModelBuilder
     private readonly List<PropertyModel> _properties = [];
     private readonly List<FieldModel> _fields = [];
     private CboDto? _cbo;
-    private AtfdData? _atfd;
+    private AtfdDto? _atfd;
     private TccDto? _tcc;
     private IdentifierDto? _identifier;
+    private ClassType? _classType;
 
-    public ClassModelBuilder WithIdentifier(IdentifierDto identifier)
+    public ClassModelBuilder WithIdentifier(IdentifierDto identifier, ClassType classType)
     {
         _identifier = identifier;
+        _classType = classType;
         return this;
     }
 
@@ -43,7 +46,7 @@ public class ClassModelBuilder
         return this;
     }
 
-    public ClassModelBuilder AddAtfd(AtfdData atfd)
+    public ClassModelBuilder AddAtfd(AtfdDto atfd)
     {
         _atfd = atfd;
         return this;
@@ -58,7 +61,8 @@ public class ClassModelBuilder
     public ClassModel Build()
     {
         ArgumentNullException.ThrowIfNull(_identifier, nameof(_identifier));
-        ClassModel model = new(_identifier, _methods, _properties, _fields);
+        ArgumentNullException.ThrowIfNull(_classType, nameof(_classType));
+        ClassModel model = new(_identifier, _classType.Value, _methods, _properties, _fields);
 
         if (_cbo is not null)
         {

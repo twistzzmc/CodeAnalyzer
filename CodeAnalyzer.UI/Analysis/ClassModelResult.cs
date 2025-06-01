@@ -3,7 +3,7 @@ using CodeAnalyzer.Analyzer;
 using CodeAnalyzer.Analyzer.Results;
 using CodeAnalyzer.Core.Models;
 using CodeAnalyzer.Core.Models.Stats;
-using CodeAnalyzer.UI.Analysis.Builders;
+using CodeAnalyzer.UI.LoggerUi.Builders.AnalysisResultBuilders;
 using CodeAnalyzer.UI.LoggerUi.Builders.ModelEntryBuilders;
 using CodeAnalyzer.UI.LoggerUi.Builders.SubModelEntryBuilders;
 using CodeAnalyzer.UI.LoggerUi.Dtos;
@@ -22,7 +22,7 @@ internal sealed class ClassModelResult(
     public LogEntry GodObjectEntry { get; private set; } = LogEntry.Empty;
 
     public ClassModelResult(ClassModel model)
-        : this(model, new AnalysisResultLogBuilder(), new StatsEntryBuilder())
+        : this(model, new GodObjectResultLogBuilder(), new StatsEntryBuilder())
     { }
 
     public void AddModelEntry(ClassEntryBuilder classEntryBuilder)

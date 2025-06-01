@@ -1,4 +1,5 @@
 using CodeAnalyzer.Core.Identifiers;
+using CodeAnalyzer.Core.Models.Enums;
 using CodeAnalyzer.Core.Models.Stats.Data;
 
 namespace CodeAnalyzer.Core.Models.Builders;
@@ -9,7 +10,12 @@ public sealed class ClassModelsBuilder
     
     public void RegisterClass(IdentifierDto identifier)
     {
-        AddRegistry(identifier.FullName, classBuilder => classBuilder.WithIdentifier(identifier));
+        AddRegistry(identifier.FullName, classBuilder => classBuilder.WithIdentifier(identifier, ClassType.Class));
+    }
+
+    public void RegisterInterface(IdentifierDto identifier)
+    {
+        AddRegistry(identifier.FullName, classBuilder => classBuilder.WithIdentifier(identifier, ClassType.Interface));
     }
 
     public void RegisterMethod(MethodModel method)
@@ -32,7 +38,7 @@ public sealed class ClassModelsBuilder
         AddRegistry(identifier.FullName, classBuilder => classBuilder.AddCbo(cbo));
     }
 
-    public void RegisterAtfd(IdentifierDto identifier, AtfdData atfd)
+    public void RegisterAtfd(IdentifierDto identifier, AtfdDto atfd)
     {
         AddRegistry(identifier.FullName, classBuilder => classBuilder.AddAtfd(atfd));
     }

@@ -38,9 +38,9 @@ internal sealed class AtfdWalker
         }
     }
 
-    public AtfdData GetAtfd()
+    public AtfdDto GetAtfd()
     {
-        return new AtfdData(
+        return new AtfdDto(
             _foreignAccesses.Count, 
             _foreignAccesses.Select(fa => fa.ToDisplayString()));
     }

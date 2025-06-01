@@ -10,4 +10,8 @@
       <ProjectReference Include="..\CodeAnalyzer.Core\CodeAnalyzer.Core.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
+    </ItemGroup>
+
 </Project>

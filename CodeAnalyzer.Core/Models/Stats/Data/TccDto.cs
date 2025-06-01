@@ -2,6 +2,9 @@ using System.Collections.ObjectModel;
 
 namespace CodeAnalyzer.Core.Models.Stats.Data;
 
+/// <summary>
+/// Tight Class Cohesion
+/// </summary>
 public sealed class TccDto(double tcc, Dictionary<string, IEnumerable<string>> referencesInMethods)
 {
     public double Tcc { get; init; } = tcc;

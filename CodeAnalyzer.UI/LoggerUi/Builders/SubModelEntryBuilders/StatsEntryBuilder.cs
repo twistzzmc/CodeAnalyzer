@@ -30,9 +30,9 @@ internal sealed class StatsEntryBuilder : IModelEntryBuilder<Statistics>
         return entry;
     }
 
-    private static LogEntry BuildWmpc(bool isWmpcSet, int wmpc)
+    private static LogEntry BuildWmpc(bool isWmpcSet, WmpcDto wmpc)
     {
-        return new LogEntry($"[{isWmpcSet}] WMPC: {wmpc}");
+        return new LogEntry($"[{isWmpcSet}] WMPC: {wmpc.Wmpc}");
     }
 
     private static LogEntry BuildFanIn(bool isFanInSet, FanInDto fanIn)
@@ -42,7 +42,7 @@ internal sealed class StatsEntryBuilder : IModelEntryBuilder<Statistics>
         return entry;
     }
     
-    private static LogEntry BuildAtfd(bool isAtfdSet, AtfdData atfd)
+    private static LogEntry BuildAtfd(bool isAtfdSet, AtfdDto atfd)
     {
         LogEntry entry = new($"[{isAtfdSet}] ATFD: {atfd.Atfd}");
         atfd.ReferencedSymbols.ToList().ForEach(rs => entry.AddChild(rs));

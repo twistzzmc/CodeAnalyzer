@@ -26,12 +26,15 @@ internal sealed class CodeWalker(ICollectorFactory collectorFactory, CSharpCompi
 
     public IEnumerable<ClassModel> CollectClassModels()
     {
-        foreach (KeyValuePair<IdentifierDto, CboDto> cboKvp in _cboWalker.GetCboMap())
-        {
-            _builder.RegisterCbo(cboKvp.Key, cboKvp.Value);
-        }
+        Dictionary<IdentifierDto, CboDto> cboMap = _cboWalker.GetCboMap();
         
-        return _builder.Build();
+        IEnumerable<ClassModel> models = _builder.Build().ToList();
+        foreach (ClassModel model in models)
+        {
+            model.Stats.Cbo = cboMap.TryGetValue(model.Identifier, out CboDto? cbo) ? cbo : CboDto.Empty;
+        }
+
+        return models;
     }
     
     public override void VisitClassDeclaration(ClassDeclarationSyntax node)
@@ -61,8 +64,10 @@ internal sealed class CodeWalker(ICollectorFactory collectorFactory, CSharpCompi
 
     public override void VisitInterfaceDeclaration(InterfaceDeclarationSyntax node)
     {
-        IdentifierDto classIdentifier = _identifierCreator.Create(node.Identifier.Text, node);
-        _builder.RegisterClass(classIdentifier);
+        IdentifierDto interfaceIdentifier = _identifierCreator.Create(node.Identifier.Text, node);
+        _builder.RegisterInterface(interfaceIdentifier);
+        _builder.RegisterAtfd(interfaceIdentifier, AtfdDto.Empty);
+        _builder.RegisterTcc(interfaceIdentifier, TccDto.Empty);
         base.VisitInterfaceDeclaration(node);
     }
 

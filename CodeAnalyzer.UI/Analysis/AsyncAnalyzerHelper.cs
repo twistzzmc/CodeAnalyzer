@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,6 +8,7 @@ using CodeAnalyzer.Core.Logging.Interfaces;
 using CodeAnalyzer.Core.Models;
 using CodeAnalyzer.Parser;
 using CodeAnalyzer.UI.Analysis.Loggers;
+using CodeAnalyzer.UI.LoggerUi.Builders.AnalysisResultBuilders;
 using CodeAnalyzer.UI.LoggerUi.Builders.ModelEntryBuilders;
 using CodeAnalyzer.UI.LoggerUi.Dtos;
 using CodeAnalyzer.UI.LoggerUi.Interfaces;
@@ -15,6 +17,7 @@ namespace CodeAnalyzer.UI.Analysis;
 
 internal sealed class AsyncAnalyzerHelper
 {
+    private readonly GodObjectResultLogBuilder _godObjectResultLogBuilder = new();
     private readonly ClassEntryBuilder _classEntryBuilder = new();
     private readonly List<ClassModelResult> _results = [];
     private readonly LogEntry _classEntry = new("Liczba znalezionych klas: 0");
@@ -68,18 +71,34 @@ internal sealed class AsyncAnalyzerHelper
         });
     }
 
-    public async Task RunGodObjectAnalysis(ILoggerUi logger)
+    public async Task RunGodObjectAnalysis(ILogger logger, ILoggerUi resultLogger)
     {
         await Task.Run(() =>
         {
-            GodObjectAnalyzer godObjectAnalyzer = new(_results.Select(r => r.Model));
-            foreach (ClassModelResult model in _results)
+            try
             {
-                model.AddGodObjectAnalysis(godObjectAnalyzer);
-            }
+                logger.OpenLevel("Analiza obiektów Bóg");
+                GodObjectAnalyzer godObjectAnalyzer = new(_results.Select(r => r.Model));
+                foreach (ClassModelResult model in _results)
+                {
+                    logger.Info($"Klasa {model.Model.Identifier.FullName}");
+                    
+                    try
+                    {
+                        model.AddGodObjectAnalysis(godObjectAnalyzer);
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.Exception(ex);
+                    }
+                }
 
-            GodObjectLogger godObjectLogger = new(logger);
-            godObjectLogger.Log(_results.Select(r => r.GodObjectResult));
+                resultLogger.AddEntry(_godObjectResultLogBuilder.Build(_results.Select(r => r.GodObjectResult)));
+            }
+            finally
+            {
+                logger.CloseLevel();
+            }
         });
     }
 }
