@@ -1,10 +1,11 @@
 using CodeAnalyzer.Core.Identifiers;
+using CodeAnalyzer.Core.Logging.Interfaces;
 using CodeAnalyzer.Core.Models.Enums;
 using CodeAnalyzer.Core.Models.Stats.Data;
 
 namespace CodeAnalyzer.Core.Models.Builders;
 
-public sealed class ClassModelsBuilder
+public sealed class ClassModelsBuilder(ILogger logger)
 {
     private readonly Dictionary<string, ClassModelBuilder> _namespaceToBuilder = [];
     
@@ -50,7 +51,21 @@ public sealed class ClassModelsBuilder
 
     public IEnumerable<ClassModel> Build()
     {
-        return _namespaceToBuilder.Select(kvp => kvp.Value.Build());
+        List<ClassModel> models = [];
+
+        foreach (KeyValuePair<string, ClassModelBuilder> kvp in _namespaceToBuilder)
+        {
+            try
+            {
+                models.Add(kvp.Value.Build());
+            }
+            catch (Exception ex)
+            {
+                logger.Exception(ex);
+            }
+        }
+
+        return models;
     }
 
     private void AddRegistry(string modelNamespace, Action<ClassModelBuilder> registryAction)

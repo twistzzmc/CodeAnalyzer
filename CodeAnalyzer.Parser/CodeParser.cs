@@ -31,7 +31,7 @@ public class CodeParser(IWarningRegistry warningRegistry, ILogger logger)
 
     private IEnumerable<ClassModel> Walk(CSharpCompilation compilation)
     {
-        CodeWalker walker = new(warningRegistry, compilation);
+        CodeWalker walker = new(warningRegistry, compilation, logger);
 
         try
         {

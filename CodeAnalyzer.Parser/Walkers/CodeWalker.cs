@@ -12,16 +12,16 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace CodeAnalyzer.Parser.Walkers;
 
-internal sealed class CodeWalker(ICollectorFactory collectorFactory, CSharpCompilation compilation) : CSharpSyntaxWalker
+internal sealed class CodeWalker(ICollectorFactory collectorFactory, CSharpCompilation compilation, ILogger logger) : CSharpSyntaxWalker
 {
     private readonly IdentifierCreator _identifierCreator = new(collectorFactory.WarningRegistry);
-    private readonly ClassModelsBuilder _builder = new();
+    private readonly ClassModelsBuilder _builder = new(logger);
     private readonly CboWalker _cboWalker = new();
     private readonly AtfdWalker _atfdWalker = new();
     private readonly TccWalker _tccWalker = new();
     
-    public CodeWalker(IWarningRegistry warningRegistry, CSharpCompilation compilation)
-        : this(new CollectorFactory(warningRegistry), compilation)
+    public CodeWalker(IWarningRegistry warningRegistry, CSharpCompilation compilation, ILogger logger)
+        : this(new CollectorFactory(warningRegistry), compilation, logger)
     { }
 
     public IEnumerable<ClassModel> CollectClassModels()
