@@ -14,14 +14,4 @@ public class MethodModel : IModel
     public required int Length { get; init; }
     public required int CyclomaticComplexity { get; init; }
     public required IReadOnlyList<ReferenceInstance> References { get; init; }
-
-    public override string ToString()
-    {
-        return $"{nameof(MethodModel)} {Identifier}, " +
-               $"{nameof(AccessModifierType)}: {AccessModifierType}, " +
-               $"{nameof(ReturnType)}: {ReturnType}, " +
-               $"{nameof(LineStart)}: {LineStart}, " +
-               $"{nameof(Length)}: {Length}, " +
-               $"{nameof(CyclomaticComplexity)}: {CyclomaticComplexity})";
-    }
 }

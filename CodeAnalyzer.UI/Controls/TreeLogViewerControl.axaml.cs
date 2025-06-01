@@ -13,7 +13,7 @@ namespace CodeAnalyzer.UI.Controls;
 
 public partial class TreeLogViewerControl : UserControl, ILoggerUi, ILogger
 {
-    private readonly EntryQueue _queue = new();
+    private readonly EntryStack _stack = new();
     
     public ObservableCollection<LogEntry> Entries { get; } = [];
     
@@ -26,28 +26,38 @@ public partial class TreeLogViewerControl : UserControl, ILoggerUi, ILogger
     public void OpenLevel(string title, params object[] titleParameters)
     {
         LogEntry entry = new(string.Format(title, titleParameters), LogPriority.NewLevel);
-        AddEntry(entry);
-        _queue.Enqueue(entry);
+
+        if (_stack.Count == 0)
+        {
+            AddEntry(entry);
+        }
+        
+        _stack.Push(entry);
     }
 
     public IProgress OpenProgress(int total, string title, params object[] titleParameters)
     {
         ProgressLogEntry progressEntry = new(total, string.Format(title, titleParameters));
-        AddEntry(progressEntry);
-        _queue.Enqueue(progressEntry);
+
+        if (_stack.Count == 0)
+        {
+            AddEntry(progressEntry);
+        }
+
+        _stack.Push(progressEntry);
         return progressEntry;
     }
 
     public void Success(string message, params object[] messageParameters)
     {
         LogEntry entry = new(string.Format(message, messageParameters), LogPriority.Success);
-        _queue.Register(entry, Entries);
+        _stack.Register(entry, Entries);
     }
 
     public void Info(string message, params object[] messageParameters)
     {
         LogEntry entry = new(string.Format(message, messageParameters), LogPriority.Info);
-        _queue.Register(entry, Entries);
+        _stack.Register(entry, Entries);
     }
 
     public void Info(IProgress progress, string message, params object[] messageParameters)
@@ -59,24 +69,24 @@ public partial class TreeLogViewerControl : UserControl, ILoggerUi, ILogger
     public void Warning(string message, params object[] messageParameters)
     {
         LogEntry entry = new(string.Format(message, messageParameters), LogPriority.Warning);
-        _queue.Register(entry, Entries);
+        _stack.Register(entry, Entries);
     }
 
     public void Error(string message, params object[] messageParameters)
     {
         LogEntry entry = new(string.Format(message, messageParameters), LogPriority.Error);
-        _queue.Register(entry, Entries);
+        _stack.Register(entry, Entries);
     }
 
     public void Exception(Exception ex)
     {
         LogEntry entry = new(ex);
-        _queue.Register(entry, Entries);
+        _stack.Register(entry, Entries);
     }
 
     public void CloseLevel()
     {
-        if (!_queue.TryDequeue())
+        if (!_stack.TryPop())
         {
             AddEntry(new LogEntry("Próba zamknięcia poziomu logowania na najwyższym poziomie", LogPriority.Error));
         }

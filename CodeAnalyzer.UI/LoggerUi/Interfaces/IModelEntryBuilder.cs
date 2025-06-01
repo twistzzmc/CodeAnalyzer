@@ -3,9 +3,9 @@ using CodeAnalyzer.UI.LoggerUi.Dtos;
 
 namespace CodeAnalyzer.UI.LoggerUi.Interfaces;
 
-internal interface IModelEntryBuilder<in TModel>
+internal interface IModelEntryBuilder<in TSource>
 {
     string Key { get; }
     
-    LogEntry Build(TModel model);
+    LogEntry Build(TSource source);
 }

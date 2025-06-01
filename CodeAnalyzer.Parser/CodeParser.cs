@@ -1,5 +1,6 @@
 ﻿using CodeAnalyzer.Core.Logging.Interfaces;
 using CodeAnalyzer.Core.Models;
+using CodeAnalyzer.Parser.Dtos;
 using CodeAnalyzer.Parser.Walkers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -8,22 +9,22 @@ namespace CodeAnalyzer.Parser;
 
 public class CodeParser(IWarningRegistry warningRegistry, ILogger logger)
 {
-    public IEnumerable<ClassModel> Parse(IEnumerable<string> codes)
+    public IEnumerable<ClassModel> Parse(IEnumerable<FileDto> codes)
     {
         return Walk(Compile(codes));
     }
 
-    public IEnumerable<ClassModel> Parse(string code)
+    public IEnumerable<ClassModel> Parse(FileDto code)
     {
         return Walk(Compile([code]));
     }
 
-    public static IEnumerable<ClassModel> Parse(IWarningRegistry warningRegistry, ILogger logger, string code)
+    public static IEnumerable<ClassModel> Parse(IWarningRegistry warningRegistry, ILogger logger, FileDto code)
     {
         return new CodeParser(warningRegistry, logger).Parse(code);
     }
 
-    public static IEnumerable<ClassModel> Parse(IWarningRegistry warningRegistry, ILogger logger, IEnumerable<string> codes)
+    public static IEnumerable<ClassModel> Parse(IWarningRegistry warningRegistry, ILogger logger, IEnumerable<FileDto> codes)
     {
         return new CodeParser(warningRegistry, logger).Parse(codes);
     }
@@ -37,7 +38,7 @@ public class CodeParser(IWarningRegistry warningRegistry, ILogger logger)
             IProgress progress = logger.OpenProgress(compilation.SyntaxTrees.Length, "Przeszukiwanie drzew");
             foreach (SyntaxTree tree in compilation.SyntaxTrees)
             {
-                logger.Info(progress, "Chodzenie po drzewie {0}", tree.Length);
+                logger.Info(progress, $"Chodzenie po drzewie {tree.FilePath} [{tree.Length}]");
                 walker.Visit(tree.GetRoot());
             }
 
@@ -57,9 +58,10 @@ public class CodeParser(IWarningRegistry warningRegistry, ILogger logger)
         return walker.CollectClassModels();
     }
 
-    private CSharpCompilation Compile(IEnumerable<string> codes)
+    private CSharpCompilation Compile(IEnumerable<FileDto> codes)
     {
-        List<SyntaxTree> syntaxTrees = codes.Select(code => CSharpSyntaxTree.ParseText(code)).ToList();
+        List<SyntaxTree> syntaxTrees = codes.Select(
+            code => CSharpSyntaxTree.ParseText(code.Data, path: code.Path)).ToList();
 
         IEnumerable<PortableExecutableReference> references = AppDomain.CurrentDomain
             .GetAssemblies()

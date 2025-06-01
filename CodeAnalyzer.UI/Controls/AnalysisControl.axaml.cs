@@ -12,6 +12,7 @@ using CodeAnalyzer.Analyzer.Results;
 using CodeAnalyzer.Core.Logging.Interfaces;
 using CodeAnalyzer.Core.Models;
 using CodeAnalyzer.Parser;
+using CodeAnalyzer.Parser.Dtos;
 using CodeAnalyzer.UI.Analysis;
 using CodeAnalyzer.UI.Base;
 using CodeAnalyzer.UI.Interfaces;
@@ -66,6 +67,18 @@ public partial class AnalysisControl : UserControl
         InitializeComponent();
     }
 
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+
+        if (change.Property == LoggerProperty &&
+            change.NewValue is not null &&
+            change.NewValue is ILogger logger)
+        {
+            _codeReader.Logger = logger;
+        }
+    }
+
     private async void AnalyzeGodObjects_OnClick(object? sender, RoutedEventArgs e)
     {
         ChangeButtonsEnable(false);
@@ -90,7 +103,7 @@ public partial class AnalysisControl : UserControl
 
         try
         {
-            IEnumerable<string> codes = await _codeReader.ReadCode(CodePathProvider);
+            IEnumerable<FileDto> codes = await _codeReader.ReadCode(CodePathProvider);
             await _analyzerHelper.ParseCode(WarningRegistry, Logger, codes);
             await _analyzerHelper.LogModels(ResultLogger);
         }
@@ -122,32 +135,10 @@ public partial class AnalysisControl : UserControl
         }
     }
 
-    private async Task<IEnumerable<ClassModel>> Parse()
-    {
-        ICodePathProvider codePathProvider = await GetCodePathProvider();
-        IWarningRegistry warningRegistry = await GetWarningRegistry();
-        ILogger logger = await GetLogger();
-        
-        IEnumerable<string> codes = await _codeReader.ReadCode(codePathProvider);
-        return CodeParser.Parse(warningRegistry, logger, codes);
-    }
-
     private void ChangeButtonsEnable(bool enable)
     {
         AnalyzeLoadedFiles.IsEnabled = enable;
         AnalyzeTooLongMethods.IsEnabled = enable;
         AnalyzeGodObjects.IsEnabled = enable;
     }
-
-    private async Task<IWarningRegistry> GetWarningRegistry()
-        => await Dispatcher.UIThread.InvokeAsync(() => WarningRegistry);
-    
-    private async Task<ILoggerUi> GetResultLogger()
-        => await Dispatcher.UIThread.InvokeAsync(() => ResultLogger);
-    
-    private async Task<ILogger> GetLogger()
-        => await Dispatcher.UIThread.InvokeAsync(() => Logger);
-    
-    private async Task<ICodePathProvider> GetCodePathProvider()
-        => await Dispatcher.UIThread.InvokeAsync(() => CodePathProvider);
 }

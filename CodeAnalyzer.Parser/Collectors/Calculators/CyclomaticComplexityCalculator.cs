@@ -58,9 +58,9 @@ internal sealed class CyclomaticComplexityCalculator(
             return 0;
         }
 
-        if (methodSymbol?.IsAbstract == true)
+        if (methodSymbol?.IsAbstract == true || methodSymbol?.IsExtern == true)
         {
-            // Metoda abstrakcyjna nie musi mieć implementacji
+            // Metoda abstrakcyjna lub "extern" nie musi mieć implementacji
             return 0;
         }
                 

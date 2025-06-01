@@ -7,6 +7,7 @@ using CodeAnalyzer.Analyzer.Results;
 using CodeAnalyzer.Core.Logging.Interfaces;
 using CodeAnalyzer.Core.Models;
 using CodeAnalyzer.Parser;
+using CodeAnalyzer.Parser.Dtos;
 using CodeAnalyzer.UI.LoggerUi.Builders.AnalysisResultBuilders;
 using CodeAnalyzer.UI.LoggerUi.Builders.ModelEntryBuilders;
 using CodeAnalyzer.UI.LoggerUi.Dtos;
@@ -24,7 +25,7 @@ internal sealed class AsyncAnalyzerHelper
 
     private bool _isTopClassEntryAdded = false;
     
-    public async Task ParseCode(IWarningRegistry warningRegistry, ILogger logger, IEnumerable<string> code)
+    public async Task ParseCode(IWarningRegistry warningRegistry, ILogger logger, IEnumerable<FileDto> code)
     {   
         await Task.Run(() =>
         {
