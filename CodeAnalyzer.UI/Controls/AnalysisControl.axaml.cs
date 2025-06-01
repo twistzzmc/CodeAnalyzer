@@ -13,7 +13,6 @@ using CodeAnalyzer.Core.Logging.Interfaces;
 using CodeAnalyzer.Core.Models;
 using CodeAnalyzer.Parser;
 using CodeAnalyzer.UI.Analysis;
-using CodeAnalyzer.UI.Analysis.Loggers;
 using CodeAnalyzer.UI.Base;
 using CodeAnalyzer.UI.Interfaces;
 using CodeAnalyzer.UI.LoggerUi.Builders.ModelEntryBuilders;

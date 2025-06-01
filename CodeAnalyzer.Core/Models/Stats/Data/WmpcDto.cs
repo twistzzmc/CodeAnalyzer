@@ -5,7 +5,7 @@ namespace CodeAnalyzer.Core.Models.Stats.Data;
 /// </summary>
 public sealed class WmpcDto(int wmpc)
 {
-    public int Wmpc { get; set; }
+    public int Wmpc { get; set; } = wmpc;
     
     public static WmpcDto Empty = new WmpcDto(0);
 }
