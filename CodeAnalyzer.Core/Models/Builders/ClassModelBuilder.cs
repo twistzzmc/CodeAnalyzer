@@ -1,4 +1,6 @@
+using System.Collections.Concurrent;
 using CodeAnalyzer.Core.Identifiers;
+using CodeAnalyzer.Core.Logging.Interfaces;
 using CodeAnalyzer.Core.Models.Enums;
 using CodeAnalyzer.Core.Models.Stats.Data;
 
@@ -6,9 +8,26 @@ namespace CodeAnalyzer.Core.Models.Builders;
 
 public class ClassModelBuilder
 {
-    private readonly List<MethodModel> _methods = [];
-    private readonly List<PropertyModel> _properties = [];
-    private readonly List<FieldModel> _fields = [];
+    private struct Snapshot
+    {
+        public required MethodModel[] Methods { get; init; }
+        public required PropertyModel[] Properties { get; init; }
+        public required FieldModel[] Fields { get; init; }
+        
+        public required CboDto? Cbo { get; init; }
+        public required AtfdDto? Atfd { get; init; }
+        public required TccDto? Tcc { get; init; }
+        
+        public required IdentifierDto? Identifier { get; init; }
+        public required ClassType? ClassType { get; init; }
+    }
+    
+    private readonly Lock _lock = new();
+    
+    private readonly ConcurrentBag<MethodModel> _methods = [];
+    private readonly ConcurrentBag<PropertyModel> _properties = [];
+    private readonly ConcurrentBag<FieldModel> _fields = [];
+    
     private CboDto? _cbo;
     private AtfdDto? _atfd;
     private TccDto? _tcc;
@@ -17,8 +36,12 @@ public class ClassModelBuilder
 
     public ClassModelBuilder WithIdentifier(IdentifierDto identifier, ClassType classType)
     {
-        _identifier = identifier;
-        _classType = classType;
+        lock (_lock)
+        {
+            _identifier = identifier;
+            _classType = classType;
+        }
+        
         return this;
     }
 
@@ -42,43 +65,116 @@ public class ClassModelBuilder
 
     public ClassModelBuilder AddCbo(CboDto cbo)
     {
-        _cbo = cbo;
+        lock (_lock)
+        {
+            _cbo = cbo;
+        }
+        
         return this;
     }
 
     public ClassModelBuilder AddAtfd(AtfdDto atfd)
     {
-        _atfd = atfd;
+        lock (_lock)
+        {
+            _atfd = atfd;
+        }
+        
         return this;
     }
 
     public ClassModelBuilder AddTcc(TccDto tcc)
     {
-        _tcc = tcc;
+        lock (_lock)
+        {
+            _tcc = tcc;
+        }
+        
         return this;
     }
 
     public ClassModel Build()
     {
-        ArgumentNullException.ThrowIfNull(_identifier, nameof(_identifier));
-        ArgumentNullException.ThrowIfNull(_classType, nameof(_classType));
-        ClassModel model = new(_identifier, _classType.Value, _methods, _properties, _fields);
+        Snapshot snap = TakeSnapshot();
+        
+        ArgumentNullException.ThrowIfNull(snap.Identifier, nameof(snap.Identifier));
+        ArgumentNullException.ThrowIfNull(snap.ClassType, nameof(snap.ClassType));
+        
+        ClassModel model = new(snap.Identifier, snap.ClassType.Value, snap.Methods, snap.Properties, snap.Fields);
 
-        if (_cbo is not null)
+        if (snap.Cbo is not null)
         {
-            model.Stats.Cbo = _cbo;
+            model.Stats.Cbo = snap.Cbo;
         }
 
-        if (_atfd is not null)
+        if (snap.Atfd is not null)
         {
-            model.Stats.Atfd = _atfd;
+            model.Stats.Atfd = snap.Atfd;
         }
 
-        if (_tcc is not null)
+        if (snap.Tcc is not null)
         {
-            model.Stats.Tcc = _tcc;
+            model.Stats.Tcc = snap.Tcc;
         }
 
         return model;
+    }
+
+    internal void DumpData(ILogger logger)
+    {
+        Snapshot snap = TakeSnapshot();
+        
+        logger.Info($"Identifier: {snap.Identifier}");
+        logger.Info($"ClassType: {snap.ClassType}");
+        logger.Info($"Cbo: {snap.Cbo}");
+        logger.Info($"Atfd: {snap.Atfd}");
+        logger.Info($"Tcc: {snap.Tcc}");
+
+        try
+        {
+            logger.OpenLevel($"[{_methods.Count}] Methods");
+            
+            foreach (MethodModel methodModel in _methods)
+            {
+                logger.Info($"{methodModel.Identifier}");
+                logger.Info($"[{methodModel.LineStart}] {methodModel.ReturnType}");
+            }
+
+            foreach (PropertyModel propertyModel in _properties)
+            {
+                logger.Info($"{propertyModel.Identifier}");
+                logger.Info($"[{propertyModel.LineStart}] {propertyModel.Type}");
+            }
+
+            foreach (FieldModel fieldModel in _fields)
+            {
+                logger.Info($"{fieldModel.Identifier}");
+                logger.Info($"[{fieldModel.LineStart}] {fieldModel.Type}");
+            }
+        }
+        finally
+        {
+            logger.CloseLevel();
+        }
+    }
+
+    private Snapshot TakeSnapshot()
+    {
+        lock (_lock)
+        {
+            return new Snapshot
+            {
+                Methods = _methods.ToArray(),
+                Properties = _properties.ToArray(),
+                Fields = _fields.ToArray(),
+                
+                Cbo = _cbo,
+                Atfd = _atfd,
+                Tcc = _tcc,
+                
+                Identifier = _identifier,
+                ClassType = _classType,
+            };
+        }
     }
 }

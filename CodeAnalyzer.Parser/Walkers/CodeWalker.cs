@@ -1,10 +1,8 @@
 using CodeAnalyzer.Core.Identifiers;
-using CodeAnalyzer.Core.Logging.Interfaces;
 using CodeAnalyzer.Core.Models;
 using CodeAnalyzer.Core.Models.Builders;
 using CodeAnalyzer.Core.Models.Stats.Data;
 using CodeAnalyzer.Parser.Collectors.Creators;
-using CodeAnalyzer.Parser.Collectors.Factories;
 using CodeAnalyzer.Parser.Collectors.Interfaces;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -12,30 +10,17 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace CodeAnalyzer.Parser.Walkers;
 
-internal sealed class CodeWalker(ICollectorFactory collectorFactory, CSharpCompilation compilation, ILogger logger) : CSharpSyntaxWalker
+internal sealed class CodeWalker(
+    ICollectorFactory collectorFactory,
+    CSharpCompilation compilation,
+    ClassModelsBuilder builder) : CSharpSyntaxWalker
 {
     private readonly IdentifierCreator _identifierCreator = new(collectorFactory.WarningRegistry);
-    private readonly ClassModelsBuilder _builder = new(logger);
     private readonly CboWalker _cboWalker = new();
     private readonly AtfdWalker _atfdWalker = new();
     private readonly TccWalker _tccWalker = new();
-    
-    public CodeWalker(IWarningRegistry warningRegistry, CSharpCompilation compilation, ILogger logger)
-        : this(new CollectorFactory(warningRegistry), compilation, logger)
-    { }
 
-    public IEnumerable<ClassModel> CollectClassModels()
-    {
-        Dictionary<IdentifierDto, CboDto> cboMap = _cboWalker.GetCboMap();
-        
-        IEnumerable<ClassModel> models = _builder.Build().ToList();
-        foreach (ClassModel model in models)
-        {
-            model.Stats.Cbo = cboMap.TryGetValue(model.Identifier, out CboDto? cbo) ? cbo : CboDto.Empty;
-        }
-
-        return models;
-    }
+    public Dictionary<IdentifierDto, CboDto> CboMap => _cboWalker.GetCboMap();
     
     public override void VisitClassDeclaration(ClassDeclarationSyntax node)
     {
@@ -51,30 +36,58 @@ internal sealed class CodeWalker(ICollectorFactory collectorFactory, CSharpCompi
             _tccWalker.EnterClass(semanticModel, classSymbol);
         }
         
-        _builder.RegisterClass(classIdentifier);
+        builder.RegisterClass(classIdentifier);
         
         base.VisitClassDeclaration(node);
 
-        if (classSymbol is not null)
+        if (classSymbol is null)
         {
-            _builder.RegisterAtfd(classIdentifier, _atfdWalker.GetAtfd());
-            _builder.RegisterTcc(classIdentifier, _tccWalker.CalculateTcc());
+            return;
         }
+        
+        builder.RegisterAtfd(classIdentifier, _atfdWalker.GetAtfd());
+        builder.RegisterTcc(classIdentifier, _tccWalker.CalculateTcc());
     }
 
     public override void VisitInterfaceDeclaration(InterfaceDeclarationSyntax node)
     {
         IdentifierDto interfaceIdentifier = _identifierCreator.Create(node.Identifier.Text, node);
-        _builder.RegisterInterface(interfaceIdentifier);
-        _builder.RegisterAtfd(interfaceIdentifier, AtfdDto.Empty);
-        _builder.RegisterTcc(interfaceIdentifier, TccDto.Empty);
+        builder.RegisterInterface(interfaceIdentifier);
+        builder.RegisterAtfd(interfaceIdentifier, AtfdDto.Empty);
+        builder.RegisterTcc(interfaceIdentifier, TccDto.Empty);
         base.VisitInterfaceDeclaration(node);
+    }
+
+    public override void VisitStructDeclaration(StructDeclarationSyntax node)
+    {
+        IdentifierDto structIdentifier = _identifierCreator.Create(node.Identifier.Text, node);
+        SemanticModel semanticModel = compilation.GetSemanticModel(node.SyntaxTree);
+        INamedTypeSymbol? classSymbol = semanticModel.GetDeclaredSymbol(node);
+
+        if (classSymbol is not null)
+        {
+            _cboWalker.EnterClass(structIdentifier, semanticModel, classSymbol);
+            _atfdWalker.EnterClass(semanticModel, classSymbol);
+            _tccWalker.EnterClass(semanticModel, classSymbol);
+        }
+        
+        builder.RegisterStruct(structIdentifier);
+        
+        base.VisitStructDeclaration(node);
+
+        if (classSymbol is null)
+        {
+            return;
+        }
+        
+        builder.RegisterAtfd(structIdentifier, _atfdWalker.GetAtfd());
+        builder.RegisterTcc(structIdentifier, _tccWalker.CalculateTcc());
     }
 
     public override void VisitMethodDeclaration(MethodDeclarationSyntax node)
     {
         MethodModel model = collectorFactory.CreateMethodCollector(compilation).Collect(node);
-        _builder.RegisterMethod(model);
+        builder.RegisterMethod(model);
         _tccWalker.CurrentMethod = node;
         
         base.VisitMethodDeclaration(node);
@@ -85,7 +98,7 @@ internal sealed class CodeWalker(ICollectorFactory collectorFactory, CSharpCompi
     public override void VisitPropertyDeclaration(PropertyDeclarationSyntax node)
     {
         PropertyModel model = collectorFactory.CreatePropertyCollector(compilation).Collect(node);
-        _builder.RegisterProperty(model);
+        builder.RegisterProperty(model);
         base.VisitPropertyDeclaration(node);
     }
 
@@ -97,7 +110,7 @@ internal sealed class CodeWalker(ICollectorFactory collectorFactory, CSharpCompi
         foreach (VariableDeclaratorSyntax variableDeclaration in node.Declaration.Variables)
         {
             FieldModel model = collector.Collect(variableDeclaration);
-            _builder.RegisterField(model);
+            builder.RegisterField(model);
         }
         
         base.VisitFieldDeclaration(node);

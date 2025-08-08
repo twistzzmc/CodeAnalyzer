@@ -8,7 +8,7 @@ public interface IWarningRegistry
 {
     event EventHandler<WarningData>? OnWarning;
     
-    List<WarningData> Warnings { get; }
+    IReadOnlyCollection<WarningData> Warnings { get; }
     IdentifierDto? CurrentIdentifier { get; }
     ModelType CurrentModelType { get; }
 

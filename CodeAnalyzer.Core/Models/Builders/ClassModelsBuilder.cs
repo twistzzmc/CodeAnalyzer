@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using CodeAnalyzer.Core.Identifiers;
 using CodeAnalyzer.Core.Logging.Interfaces;
 using CodeAnalyzer.Core.Models.Enums;
@@ -7,7 +8,7 @@ namespace CodeAnalyzer.Core.Models.Builders;
 
 public sealed class ClassModelsBuilder(ILogger logger)
 {
-    private readonly Dictionary<string, ClassModelBuilder> _namespaceToBuilder = [];
+    private readonly ConcurrentDictionary<string, ClassModelBuilder> _namespaceToBuilder = [];
     
     public void RegisterClass(IdentifierDto identifier)
     {
@@ -17,6 +18,11 @@ public sealed class ClassModelsBuilder(ILogger logger)
     public void RegisterInterface(IdentifierDto identifier)
     {
         AddRegistry(identifier.FullName, classBuilder => classBuilder.WithIdentifier(identifier, ClassType.Interface));
+    }
+
+    public void RegisterStruct(IdentifierDto identifier)
+    {
+        AddRegistry(identifier.FullName, classBuilder => classBuilder.WithIdentifier(identifier, ClassType.Struct));
     }
 
     public void RegisterMethod(MethodModel method)
@@ -62,6 +68,7 @@ public sealed class ClassModelsBuilder(ILogger logger)
             catch (Exception ex)
             {
                 logger.Exception(ex);
+                kvp.Value.DumpData(logger);
             }
         }
 
@@ -70,14 +77,32 @@ public sealed class ClassModelsBuilder(ILogger logger)
 
     private void AddRegistry(string modelNamespace, Action<ClassModelBuilder> registryAction)
     {
-        if (_namespaceToBuilder.TryGetValue(modelNamespace, out ClassModelBuilder? classBuilder))
+        if (TryRegisterOnExistingNamespace(modelNamespace, registryAction))
         {
-            registryAction(classBuilder);
             return;
         }
         
         ClassModelBuilder newClassBuilder = new();
         registryAction(newClassBuilder);
-        _namespaceToBuilder.Add(modelNamespace, newClassBuilder);
+        if (_namespaceToBuilder.TryAdd(modelNamespace, newClassBuilder))
+        {
+            return;
+        }
+        
+        if (!TryRegisterOnExistingNamespace(modelNamespace, registryAction))
+        {
+            throw new InvalidOperationException("Nie udało się dodać ani zaktualizować wpisu");
+        }
+    }
+
+    private bool TryRegisterOnExistingNamespace(string modelNamespace, Action<ClassModelBuilder> registryAction)
+    {
+        if (!_namespaceToBuilder.TryGetValue(modelNamespace, out ClassModelBuilder? classBuilder))
+        {
+            return false;
+        }
+        
+        registryAction(classBuilder);
+        return true;
     }
 }

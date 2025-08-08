@@ -1,5 +1,10 @@
-﻿using CodeAnalyzer.Core.Logging.Interfaces;
+﻿using System.Collections.Concurrent;
+using CodeAnalyzer.Core.Identifiers;
+using CodeAnalyzer.Core.Logging.Interfaces;
 using CodeAnalyzer.Core.Models;
+using CodeAnalyzer.Core.Models.Builders;
+using CodeAnalyzer.Core.Models.Stats.Data;
+using CodeAnalyzer.Parser.Collectors.Factories;
 using CodeAnalyzer.Parser.Dtos;
 using CodeAnalyzer.Parser.Walkers;
 using Microsoft.CodeAnalysis;
@@ -9,56 +14,105 @@ namespace CodeAnalyzer.Parser;
 
 public class CodeParser(IWarningRegistry warningRegistry, ILogger logger)
 {
-    public IEnumerable<ClassModel> Parse(IEnumerable<FileDto> codes)
+    private readonly ConcurrentBag<Dictionary<IdentifierDto, CboDto>> _cboMaps = [];
+    private readonly ClassModelsBuilder _modelsBuilder = new(logger);
+    private CSharpCompilation? _compilation;
+    private IProgress? _progress;
+    private CancellationTokenSource? _cancellationTokenSource;
+
+    public static async Task<IEnumerable<ClassModel>> ParseAsync(
+        IWarningRegistry warningRegistry,
+        ILogger logger,
+        IEnumerable<FileDto> codes)
     {
-        return Walk(Compile(codes));
+        return await new CodeParser(warningRegistry, logger).WalkAsync(codes);
     }
 
-    public IEnumerable<ClassModel> Parse(FileDto code)
+    private async Task<IEnumerable<ClassModel>> WalkAsync(IEnumerable<FileDto> codes)
     {
-        return Walk(Compile([code]));
-    }
+        _compilation = Compile(codes);
+        _progress = logger.OpenProgress(_compilation.SyntaxTrees.Length, "Asynchroniczne Przeszukiwanie drzew");
 
-    public static IEnumerable<ClassModel> Parse(IWarningRegistry warningRegistry, ILogger logger, FileDto code)
-    {
-        return new CodeParser(warningRegistry, logger).Parse(code);
-    }
+        _cancellationTokenSource = new CancellationTokenSource();
+        CancellationToken cancellationToken = _cancellationTokenSource.Token;
 
-    public static IEnumerable<ClassModel> Parse(IWarningRegistry warningRegistry, ILogger logger, IEnumerable<FileDto> codes)
-    {
-        return new CodeParser(warningRegistry, logger).Parse(codes);
-    }
-
-    private IEnumerable<ClassModel> Walk(CSharpCompilation compilation)
-    {
-        CodeWalker walker = new(warningRegistry, compilation, logger);
-
-        try
+        ParallelOptions options = new()
         {
-            IProgress progress = logger.OpenProgress(compilation.SyntaxTrees.Length, "Przeszukiwanie drzew");
-            foreach (SyntaxTree tree in compilation.SyntaxTrees)
-            {
-                logger.Info(progress, $"Chodzenie po drzewie {tree.FilePath} [{tree.Length}]");
-                walker.Visit(tree.GetRoot());
-            }
+            MaxDegreeOfParallelism = Environment.ProcessorCount,
+            CancellationToken = cancellationToken
+        };
 
-            logger.Success("Pomyślnie udało się przejść po drzewie");
-        }
-        catch (Exception e)
+        await Parallel.ForEachAsync(_compilation.SyntaxTrees, options, VisitRootAsync);
+
+        Dictionary<IdentifierDto, CboDto> cboMap = JoinCboMaps();
+        List<ClassModel> models = _modelsBuilder.Build().ToList();
+        foreach (ClassModel model in models)
         {
-            logger.Exception(e);
-            throw;
-        }
-        finally
-        {
-            logger.CloseLevel();
+            model.Stats.Cbo = cboMap.TryGetValue(model.Identifier, out CboDto? cbo) ? cbo : CboDto.Empty;
         }
         
-        logger.Info("Budowanie znalezionych klas");
-        return walker.CollectClassModels();
+        return models;
+    }
+    
+    private async ValueTask VisitRootAsync(SyntaxTree tree, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            ArgumentNullException.ThrowIfNull(_compilation, nameof(_compilation));
+            ArgumentNullException.ThrowIfNull(_progress, nameof(_progress));
+
+            CodeWalker walker = new(new CollectorFactory(warningRegistry), _compilation, _modelsBuilder);
+            SyntaxNode rootNode = await tree.GetRootAsync(cancellationToken);
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
+            walker.Visit(rootNode);
+
+            _cboMaps.Add(walker.CboMap);
+
+            logger.Info(_progress, $"Chodzenie po drzewie {tree.FilePath} [{tree.Length}]");
+        }
+        catch
+        {
+            if (!cancellationToken.IsCancellationRequested && _cancellationTokenSource is not null)
+            {
+                await _cancellationTokenSource.CancelAsync();
+            }
+            
+            throw;
+        }
     }
 
-    private CSharpCompilation Compile(IEnumerable<FileDto> codes)
+    private Dictionary<IdentifierDto, CboDto> JoinCboMaps()
+    {
+        Dictionary<IdentifierDto, CboDto> joinedMap = [];
+
+        foreach (Dictionary<IdentifierDto, CboDto> map in _cboMaps)
+        {
+            foreach (KeyValuePair<IdentifierDto, CboDto> pair in map)
+            {
+                if (joinedMap.TryGetValue(pair.Key, out CboDto? joined))
+                {
+                    joinedMap[pair.Key] = JoinCbo(pair.Value, joined);
+                    continue;
+                }
+                
+                joinedMap[pair.Key] = pair.Value;
+            }
+        }
+        
+        return joinedMap;
+    }
+
+    private static CboDto JoinCbo(CboDto cbo1, CboDto cbo2)
+    {
+        return new CboDto(cbo1.Cbo + cbo2.Cbo, [..cbo1.ReferencesTypes, ..cbo2.ReferencesTypes]);
+    }
+
+    private static CSharpCompilation Compile(IEnumerable<FileDto> codes)
     {
         List<SyntaxTree> syntaxTrees = codes.Select(
             code => CSharpSyntaxTree.ParseText(code.Data, path: code.Path)).ToList();

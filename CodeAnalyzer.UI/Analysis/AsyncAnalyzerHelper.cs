@@ -30,15 +30,14 @@ internal sealed class AsyncAnalyzerHelper
     
     public async Task ParseCode(IWarningRegistry warningRegistry, ILogger logger, IEnumerable<FileDto> code)
     {   
-        await Task.Run(() =>
+        
+        _classEntry.ClearChildren();
+        _classEntry.Title = "Liczba znalezionych klas: 0";
+        IEnumerable<ClassModel> models = await CodeParser.ParseAsync(warningRegistry, logger, code);
+        foreach (ClassModel result in models)
         {
-            _classEntry.ClearChildren();
-            _classEntry.Title = "Liczba znalezionych klas: 0";
-            foreach (ClassModel result in CodeParser.Parse(warningRegistry, logger, code))
-            {
-                _results.Add(new ClassModelResult(result));
-            }
-        });
+            _results.Add(new ClassModelResult(result));
+        }
     }
 
     public async Task LogModels(ILoggerUi logger)

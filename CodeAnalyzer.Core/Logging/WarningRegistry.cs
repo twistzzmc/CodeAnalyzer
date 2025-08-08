@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using CodeAnalyzer.Core.Identifiers;
 using CodeAnalyzer.Core.Logging.Data;
 using CodeAnalyzer.Core.Logging.Enums;
@@ -8,16 +9,27 @@ namespace CodeAnalyzer.Core.Logging;
 public sealed class WarningRegistry : IWarningRegistry
 {
     public event EventHandler<WarningData>? OnWarning;
-    
-    public List<WarningData> Warnings { get; } = [];
-    public IdentifierDto? CurrentIdentifier { get; private set; }
-    public ModelType CurrentModelType { get; private set; } = ModelType.Unknown;
+
+    private readonly ConcurrentQueue<WarningData> _warnings = new();
+
+    private static readonly AsyncLocal<IdentifierDto?> CurrentIdentifierAsync = new();
+    private static readonly AsyncLocal<ModelType> CurrentModelTypeAsync = new();
+
+    public IReadOnlyCollection<WarningData> Warnings => _warnings.ToArray();
+    public IdentifierDto? CurrentIdentifier => CurrentIdentifierAsync.Value;
+    public ModelType CurrentModelType => CurrentModelTypeAsync.Value;
 
     public void RegisterWarning(WarningType type, string message)
     {
-        WarningData warningData = new(CurrentIdentifier, CurrentModelType, type, message);
-        OnWarning?.Invoke(this, warningData);
-        Warnings.Add(warningData);
+        IdentifierDto? identifier = CurrentIdentifier;
+        ModelType modelType = CurrentModelType;
+
+        WarningData warningData = new(identifier, modelType, type, message);
+
+        EventHandler<WarningData>? handler = OnWarning;
+        handler?.Invoke(this, warningData);
+
+        _warnings.Enqueue(warningData);
     }
 
     public void SetContext(IdentifierDto identifier, ModelType modelType)
@@ -26,9 +38,9 @@ public sealed class WarningRegistry : IWarningRegistry
         {
             throw new ArgumentException("Kontekst musi posiadać typ modelu", nameof(modelType));
         }
-        
-        CurrentIdentifier = identifier;
-        CurrentModelType = modelType;
+
+        CurrentIdentifierAsync.Value = identifier;
+        CurrentModelTypeAsync.Value = modelType;
     }
 
     public void SetSimpleContext(string name, ModelType modelType)
@@ -38,7 +50,7 @@ public sealed class WarningRegistry : IWarningRegistry
 
     public void ClearContext()
     {
-        CurrentIdentifier = null;
-        CurrentModelType = ModelType.Unknown;
+        CurrentIdentifierAsync.Value = null;
+        CurrentModelTypeAsync.Value = ModelType.Unknown;
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using CodeAnalyzer.Core.Logging.Interfaces;
 using CodeAnalyzer.UI.LoggerUi.Enums;
 
@@ -6,18 +7,30 @@ namespace CodeAnalyzer.UI.LoggerUi.Dtos;
 
 internal sealed class ProgressLogEntry : LogEntry, IProgress
 {
+    private readonly Lock _lock = new(); 
+    
+    private readonly uint _total;
+    private uint _current;
+    
     private string _originalTitle;
     private string _progressTitle = string.Empty;
-    private uint _current = 0;
-    
-    public uint Total { get; }
+
+    public uint Total
+    {
+        get { lock (_lock) return _total; }
+        private init { lock (_lock) _total = value; }
+    }
 
     public uint Current
     {
-        get => _current;
+        get { lock (_lock) return _current; }
         set
         {
-            _current = value;
+            lock (_lock)
+            {
+                _current = value;
+            }
+            
             SetProgressTitle();
         }
     }
