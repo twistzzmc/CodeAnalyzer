@@ -19,12 +19,17 @@ internal sealed class SimpleLogEntryBuilder(string title)
 
     public SimpleLogEntryBuilder WithChildIf(bool shouldAdd, string title)
     {
+        return WithChildIf(shouldAdd, new LogEntry(title));
+    }
+
+    public SimpleLogEntryBuilder WithChildIf(bool shouldAdd, LogEntry entry)
+    {
         if (!shouldAdd)
         {
             return this;
         }
         
-        _entry.AddChild(title);
+        _entry.AddChild(entry);
         return this;
     }
 

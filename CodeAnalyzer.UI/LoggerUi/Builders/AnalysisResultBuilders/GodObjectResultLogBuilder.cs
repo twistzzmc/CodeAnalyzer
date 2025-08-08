@@ -13,36 +13,71 @@ internal sealed class GodObjectResultLogBuilder :
     IModelEntryBuilder<GodObjectResultDto>,
     IModelEntryBuilder<IEnumerable<GodObjectResultDto?>>
 {
+    private enum MetricType
+    {
+        Constant,
+        Percentile
+    }
+    
     private readonly StatsEntryBuilder _statisticsBuilder = new();
     private readonly ClassEntryBuilder _classEntryBuilder = new();
     private readonly MetricsEntryBuilder _metricsBuilder = new();
+
+    private MetricType? _metricType;
     
     public string Key => "GodObjectResult";
     
     public LogEntry Build(IEnumerable<GodObjectResultDto?> source)
     {
-        IEnumerable<GodObjectResultDto?> godObjectResultDtos = source.ToList();
-        int problemCount = godObjectResultDtos.Count(r => r?.Certainty == IssueCertainty.Problem);
-        int warningCount = godObjectResultDtos.Count(r => r?.Certainty == IssueCertainty.Warning);
+        List<GodObjectResultDto?> sourceList =  source.ToList();
+        LogEntry mainEntry = new("Wyniki analizy GodObject");
 
-        LogEntry mainEntry = new($"Znalezione GodObject: {problemCount + warningCount}");
+        _metricType = MetricType.Constant;
+        mainEntry.AddChild(BuildForMetric(sourceList));
+
+        _metricType = MetricType.Percentile;
+        mainEntry.AddChild(BuildForMetric(sourceList));
+
+        _metricType = null;
+        return mainEntry;
+    }
+
+    public LogEntry Build(GodObjectResultDto source)
+    {
+        return new SimpleLogEntryBuilder($"[{source.Certainty.ToString()}] Obiekt bóg: {source.Model.Identifier.FullName}")
+            .WithChildIf(_metricType != MetricType.Percentile, _metricsBuilder.Build(source.Constant))
+            .WithChildIf(_metricType != MetricType.Constant, _metricsBuilder.Build(source.Percentile))
+            .WithChild(_statisticsBuilder.Build(source.Stats))
+            .WithChild(_classEntryBuilder.Build(source.Model))
+            .Build();
+    }
+
+    private LogEntry BuildForMetric(IEnumerable<GodObjectResultDto?> source)
+    {
+        IEnumerable<GodObjectResultDto?> godObjectResultDtos = source.ToList();
+        int problemCount = godObjectResultDtos.Count(r => GetIssue(r) == IssueCertainty.Problem);
+        int warningCount = godObjectResultDtos.Count(r => GetIssue(r) == IssueCertainty.Warning);
+
+        LogEntry mainEntry = new(GetTitle(problemCount, warningCount));
         LogEntry problemEntry = new($"Liczba znalezionych problemów: {problemCount}");
         LogEntry waringEntry = new($"Liczba znalezionych ostrzeżeń: {warningCount}");
         LogEntry top10Entry = new("Top 10 klas poniżej progu ostrzeżenia");
 
         foreach (GodObjectResultDto? entry in godObjectResultDtos)
         {
-            if (entry is null || entry.Certainty == IssueCertainty.Info)
+            IssueCertainty? issue = GetIssue(entry);
+            
+            if (entry is null || issue == IssueCertainty.Info)
             {
                 continue;
             }
 
-            if (entry.Certainty == IssueCertainty.Problem)
+            if (issue == IssueCertainty.Problem)
             {
                 problemEntry.AddChild(Build(entry));
             }
             
-            if (entry.Certainty == IssueCertainty.Warning)
+            if (issue == IssueCertainty.Warning)
             {
                 waringEntry.AddChild(Build(entry));
             }
@@ -52,6 +87,7 @@ internal sealed class GodObjectResultLogBuilder :
             .Where(r => r is not null)
             .Cast<GodObjectResultDto>()
             .Where(r => r.Certainty == IssueCertainty.Info)
+            .OrderBy(OrderByBasedOnMetricType)
             .Take(10)
             .ToList()
             .ForEach(r => top10Entry.AddChild(Build(r)));
@@ -62,13 +98,26 @@ internal sealed class GodObjectResultLogBuilder :
         return mainEntry;
     }
 
-    public LogEntry Build(GodObjectResultDto source)
+    private string GetTitle(int problemCount, int warningCount)
     {
-        return new SimpleLogEntryBuilder($"[{source.Certainty.ToString()}] Obiekt bóg: {source.Model.Identifier.FullName}")
-            .WithChild(_metricsBuilder.Build(source.Constant))
-            .WithChild(_metricsBuilder.Build(source.Percentile))
-            .WithChild(_statisticsBuilder.Build(source.Stats))
-            .WithChild(_classEntryBuilder.Build(source.Model))
-            .Build();
+        string prefix = _metricType == MetricType.Constant
+            ? "[Metryki stałe]"
+            : "[Metryki zmienne]";
+        
+        return $"{prefix} Znalezione GodObject: {problemCount + warningCount}";
+    }
+
+    private double OrderByBasedOnMetricType(GodObjectResultDto result)
+    {
+        return _metricType == MetricType.Constant
+            ? result.Constant.CertaintyPercent
+            : result.Percentile.Score;
+    }
+
+    private IssueCertainty? GetIssue(GodObjectResultDto? result)
+    {
+        return _metricType == MetricType.Constant
+            ? result?.Constant.Certainty
+            : result?.Percentile.Certainty;
     }
 }

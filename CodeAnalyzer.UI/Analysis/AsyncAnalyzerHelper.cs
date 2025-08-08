@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CodeAnalyzer.Analyzer;
 using CodeAnalyzer.Analyzer.Results;
+using CodeAnalyzer.Analyzer.Results.GodObject;
 using CodeAnalyzer.Core.Logging.Interfaces;
 using CodeAnalyzer.Core.Models;
 using CodeAnalyzer.Parser;
@@ -101,7 +102,8 @@ internal sealed class AsyncAnalyzerHelper
                     }
                 }
 
-                resultLogger.AddEntry(_godObjectResultLogBuilder.Build(_results.Select(r => r.GodObjectResult)));
+                IEnumerable<GodObjectResultDto?> analysisResults = _results.Select(r => r.GodObjectResult);
+                resultLogger.AddEntry(_godObjectResultLogBuilder.Build(analysisResults));
             }
             finally
             {
