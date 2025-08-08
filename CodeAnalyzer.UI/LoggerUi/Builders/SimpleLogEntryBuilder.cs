@@ -17,6 +17,17 @@ internal sealed class SimpleLogEntryBuilder(string title)
         return this;
     }
 
+    public SimpleLogEntryBuilder WithChildIf(bool shouldAdd, string title)
+    {
+        if (!shouldAdd)
+        {
+            return this;
+        }
+        
+        _entry.AddChild(title);
+        return this;
+    }
+
     public SimpleLogEntryBuilder WithChild(string title, params object[] titleParameters)
     {
         _entry.AddChild(string.Format(title, titleParameters));

@@ -10,6 +10,7 @@ using CodeAnalyzer.Parser;
 using CodeAnalyzer.Parser.Dtos;
 using CodeAnalyzer.UI.LoggerUi.Builders.AnalysisResultBuilders;
 using CodeAnalyzer.UI.LoggerUi.Builders.ModelEntryBuilders;
+using CodeAnalyzer.UI.LoggerUi.Builders.SubModelEntryBuilders;
 using CodeAnalyzer.UI.LoggerUi.Dtos;
 using CodeAnalyzer.UI.LoggerUi.Interfaces;
 
@@ -18,6 +19,7 @@ namespace CodeAnalyzer.UI.Analysis;
 internal sealed class AsyncAnalyzerHelper
 {
     private readonly GodObjectResultLogBuilder _godObjectResultLogBuilder = new();
+    private readonly PercentileThresholdsBuilder _percentileThresholdsBuilder = new();
     private readonly MtlResultLogBuilder _mtlResultLogBuilder = new();
     private readonly ClassEntryBuilder _classEntryBuilder = new();
     private readonly List<ClassModelResult> _results = [];
@@ -79,7 +81,12 @@ internal sealed class AsyncAnalyzerHelper
             try
             {
                 logger.OpenLevel("Analiza obiektów Bóg");
-                GodObjectAnalyzer godObjectAnalyzer = new(_results.Select(r => r.Model));
+                List<ClassModel> classModels = _results.Select(r => r.Model).ToList();
+                GodObjectAnalyzer godObjectAnalyzer = new(classModels);
+                
+                godObjectAnalyzer.PreAnalysis();
+                resultLogger.AddEntry(_percentileThresholdsBuilder.Build(godObjectAnalyzer.Thresholds));
+                
                 foreach (ClassModelResult model in _results)
                 {
                     logger.Info($"Klasa {model.Model.Identifier.FullName}");

@@ -1,25 +1,31 @@
 using CodeAnalyzer.Analyzer.Calculators;
+using CodeAnalyzer.Analyzer.Calculators.GodObject;
 using CodeAnalyzer.Analyzer.Configurations;
 using CodeAnalyzer.Analyzer.Configurations.Dtos;
 using CodeAnalyzer.Analyzer.Enums;
 using CodeAnalyzer.Analyzer.Interfaces;
 using CodeAnalyzer.Analyzer.Results;
+using CodeAnalyzer.Analyzer.Results.GodObject;
 using CodeAnalyzer.Core.Models;
 using CodeAnalyzer.Core.Models.Enums;
 using MathNet.Numerics.Statistics;
 
 namespace CodeAnalyzer.Analyzer;
 
-public sealed class GodObjectAnalyzer(IEnumerable<ClassModel> allClassModels)
+public sealed class GodObjectAnalyzer(List<ClassModel> allClassModels)
     : IAnalyzer<GodObjectConfiguration, GodObjectParameters, ClassModel, GodObjectResultDto>
 {
     private readonly FanInCalculator _fanInCalculator = new(allClassModels);
     private readonly WmpcCalculator _wmpcCalculator = new();
+    private readonly ConstantIssueCalculator _constantIssueCalculator = new();
+    private readonly PercentileIssueCalculator _percentileIssueCalculator = new(allClassModels);
     
     private ClassModel? _model;
     
     private GodObjectParameters Warning => Configuration.WarningThreshold;
     private GodObjectParameters Problem => Configuration.ProblemThreshold;
+
+    public PercentileThresholds Thresholds => _percentileIssueCalculator.Thresholds;
     
     public GodObjectConfiguration Configuration { get; } = new GodObjectConfiguration()
     {
@@ -27,29 +33,29 @@ public sealed class GodObjectAnalyzer(IEnumerable<ClassModel> allClassModels)
         WarningThreshold = GodObjectParameters.DefaultWarning
     };
 
+    public void PreAnalysis()
+    {
+        foreach (ClassModel classModel in allClassModels)
+        {
+            _model = classModel;
+            
+            CalculateRemainingStats();
+            EnsureAllStatsSet();
+        }
+
+        _model = null;
+        _percentileIssueCalculator.CalculatePercentileThresholds();
+    }
+
     public GodObjectResultDto Analyze(ClassModel model)
     {
         _model = model;
         
-        CalculateRemainingStats();
-        EnsureAllStatsSet();
-
-        double score = CalculateGodObjectScore(
-            _model.Stats.Wmpc.Wmpc,
-            _model.Stats.Atfd.Atfd,
-            _model.Stats.Tcc.Tcc,
-            _model.Stats.Cbo.Cbo,
-            _model.Stats.FanIn.FanIn);
-
-        IssueCertainty issueCertainty = score >= 80
-            ? IssueCertainty.Problem
-            : score >= 60 ? IssueCertainty.Warning : IssueCertainty.Info;
-    
-        bool isMarinescu = IsMarinescu(_model.Stats.Wmpc.Wmpc, _model.Stats.Atfd.Atfd, _model.Stats.Tcc.Tcc);
-        if (!isMarinescu)
-        {
-            issueCertainty = IssueCertainty.Info;
-        }
+        ConstantMetric constantMetric = _constantIssueCalculator.Calculate(_model);
+        PercentileMetric percentileMetric = _percentileIssueCalculator.Calculate(_model);
+        
+        IssueCertainty issueCertainty = (IssueCertainty)Math.Max(
+            (int)constantMetric.Certainty, (int)percentileMetric.Certainty);
         
         return new GodObjectResultDto
         {
@@ -57,8 +63,8 @@ public sealed class GodObjectAnalyzer(IEnumerable<ClassModel> allClassModels)
             Certainty = issueCertainty,
             IssueType = AnalysisIssueType.GodObject,
             Stats = model.Stats,
-            CertaintyPercent = score,
-            Marinescu = isMarinescu
+            Constant = constantMetric,
+            Percentile = percentileMetric
         };
     }
 
@@ -101,28 +107,5 @@ public sealed class GodObjectAnalyzer(IEnumerable<ClassModel> allClassModels)
         ArgumentNullException.ThrowIfNull(_model);
         _fanInCalculator.Calculate(_model);
         _wmpcCalculator.Calculate(_model);
-    }
-
-    private static bool IsMarinescu(int wmpc, int atfd, double tcc)
-    {
-        return wmpc >= 47 && atfd > 5 && tcc < 0.33;
-    }
-    
-    private static double CalculateGodObjectScore(int wmc, int atfd, double tcc, int cbo, int ca)
-    {
-        double normWmc  = Math.Min(1.0, wmc / 60.0);
-        double normAtfd = Math.Min(1.0, atfd / 10.0);
-        double normTcc  = 1.0 - Math.Min(1.0, tcc / 0.33);
-        double normCbo  = Math.Min(1.0, cbo / 20.0);
-        double normCa   = Math.Min(1.0, ca / 15.0);
-
-        double score = 
-            0.25 * normWmc +
-            0.25 * normAtfd +
-            0.20 * normTcc +
-            0.15 * normCbo +
-            0.15 * normCa;
-
-        return score * 100.0;
     }
 }

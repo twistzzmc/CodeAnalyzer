@@ -1,0 +1,20 @@
+namespace CodeAnalyzer.Analyzer.Results.GodObject;
+
+public sealed class PercentileThresholds
+{
+    public required double AtfdP90 { get; init; }
+    public required double WmpcP90 { get; init; }
+    public required double TccP10 { get; init; }
+    public required double CboP90 { get; init; }
+    public required double FanInP90 { get; init; }
+    
+
+    public static PercentileThresholds Empty => new PercentileThresholds
+    {
+        AtfdP90 = 0,
+        WmpcP90 = 0,
+        TccP10 = 0,
+        CboP90 = 0,
+        FanInP90 = 0
+    };
+}

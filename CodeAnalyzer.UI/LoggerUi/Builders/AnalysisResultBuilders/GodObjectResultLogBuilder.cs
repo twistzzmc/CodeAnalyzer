@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using CodeAnalyzer.Analyzer.Enums;
-using CodeAnalyzer.Analyzer.Results;
+using CodeAnalyzer.Analyzer.Results.GodObject;
 using CodeAnalyzer.UI.LoggerUi.Builders.ModelEntryBuilders;
 using CodeAnalyzer.UI.LoggerUi.Builders.SubModelEntryBuilders;
 using CodeAnalyzer.UI.LoggerUi.Dtos;
@@ -15,6 +15,7 @@ internal sealed class GodObjectResultLogBuilder :
 {
     private readonly StatsEntryBuilder _statisticsBuilder = new();
     private readonly ClassEntryBuilder _classEntryBuilder = new();
+    private readonly MetricsEntryBuilder _metricsBuilder = new();
     
     public string Key => "GodObjectResult";
     
@@ -51,7 +52,6 @@ internal sealed class GodObjectResultLogBuilder :
             .Where(r => r is not null)
             .Cast<GodObjectResultDto>()
             .Where(r => r.Certainty == IssueCertainty.Info)
-            .OrderByDescending(r => r.CertaintyPercent)
             .Take(10)
             .ToList()
             .ForEach(r => top10Entry.AddChild(Build(r)));
@@ -64,11 +64,11 @@ internal sealed class GodObjectResultLogBuilder :
 
     public LogEntry Build(GodObjectResultDto source)
     {
-        LogEntry entry = new($"[{source.Certainty.ToString()}] Obiekt bóg: {source.Model.Identifier.FullName}");
-        entry.AddChild($"Pewność: {source.CertaintyPercent:0.00}%");
-        entry.AddChild($"Czy został spełniony próg Marinescu: {source.Marinescu}");
-        entry.AddChild(_statisticsBuilder.Build(source.Stats));
-        entry.AddChild(_classEntryBuilder.Build(source.Model));
-        return entry;
+        return new SimpleLogEntryBuilder($"[{source.Certainty.ToString()}] Obiekt bóg: {source.Model.Identifier.FullName}")
+            .WithChild(_metricsBuilder.Build(source.Constant))
+            .WithChild(_metricsBuilder.Build(source.Percentile))
+            .WithChild(_statisticsBuilder.Build(source.Stats))
+            .WithChild(_classEntryBuilder.Build(source.Model))
+            .Build();
     }
 }

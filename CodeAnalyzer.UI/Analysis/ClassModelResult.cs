@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using CodeAnalyzer.Analyzer;
 using CodeAnalyzer.Analyzer.Results;
+using CodeAnalyzer.Analyzer.Results.GodObject;
 using CodeAnalyzer.Core.Models;
 using CodeAnalyzer.Core.Models.Stats;
 using CodeAnalyzer.UI.LoggerUi.Builders.AnalysisResultBuilders;
