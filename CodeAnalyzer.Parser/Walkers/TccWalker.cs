@@ -50,7 +50,7 @@ internal sealed class TccWalker
         if (n < 2)
         {
             // tylko 0 lub 1 metoda = pełna spójność
-            return new TccDto(1.0, ToReadable());
+            return new TccDto(1, ToReadable());
         }
 
         int np = n * (n - 1) / 2;

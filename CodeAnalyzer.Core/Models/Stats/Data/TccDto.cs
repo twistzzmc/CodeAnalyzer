@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using CodeAnalyzer.Core.Interfaces;
 
 namespace CodeAnalyzer.Core.Models.Stats.Data;
 
@@ -6,16 +7,19 @@ namespace CodeAnalyzer.Core.Models.Stats.Data;
 /// Tight Class Cohesion
 /// </summary>
 public sealed class TccDto(double tcc, Dictionary<string, IEnumerable<string>> referencesInMethods)
+    : IJoinable<TccDto>
 {
-    public double Tcc { get; init; } = tcc;
+    private readonly Dictionary<string, IEnumerable<string>> _referencesInMethods = referencesInMethods;
+    
+    public double Tcc => tcc;
 
-    public IReadOnlyDictionary<string, IReadOnlyCollection<string>> ReferencesInMethods { get; init; } =
+    public IReadOnlyDictionary<string, IReadOnlyCollection<string>> ReferencesInMethods { get; } =
         ToReadOnlyDictionaryOfCollections(referencesInMethods);
 
-    public static TccDto Empty => new TccDto(0, []);
-    
-    private static IReadOnlyDictionary<string, IReadOnlyCollection<string>> 
-        ToReadOnlyDictionaryOfCollections(Dictionary<string, IEnumerable<string>> source)
+    public static TccDto Empty => new(0, []);
+
+    private static ReadOnlyDictionary<string, IReadOnlyCollection<string>> ToReadOnlyDictionaryOfCollections(
+        Dictionary<string, IEnumerable<string>> source)
     {
         ArgumentNullException.ThrowIfNull(source);
 
@@ -24,5 +28,15 @@ public sealed class TccDto(double tcc, Dictionary<string, IEnumerable<string>> r
             kvp => kvp.Value as IReadOnlyCollection<string> ?? kvp.Value.ToList());
 
         return new ReadOnlyDictionary<string, IReadOnlyCollection<string>>(converted);
+    }
+
+    public TccDto Join(TccDto other)
+    {
+        if (Tcc > other.Tcc)
+        {
+            return new TccDto(Tcc, _referencesInMethods);
+        }
+        
+        return new TccDto(other.Tcc, other._referencesInMethods);
     }
 }

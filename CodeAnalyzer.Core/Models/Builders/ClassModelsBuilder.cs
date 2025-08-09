@@ -1,12 +1,13 @@
 using System.Collections.Concurrent;
 using CodeAnalyzer.Core.Identifiers;
+using CodeAnalyzer.Core.Interfaces;
 using CodeAnalyzer.Core.Logging.Interfaces;
 using CodeAnalyzer.Core.Models.Enums;
 using CodeAnalyzer.Core.Models.Stats.Data;
 
 namespace CodeAnalyzer.Core.Models.Builders;
 
-public sealed class ClassModelsBuilder(ILogger logger)
+public sealed class ClassModelsBuilder : IFillable<ClassModelsBuilder>
 {
     private readonly ConcurrentDictionary<string, ClassModelBuilder> _namespaceToBuilder = [];
     
@@ -40,11 +41,6 @@ public sealed class ClassModelsBuilder(ILogger logger)
         AddRegistry(field.Identifier.NamespaceText, classBuilder => classBuilder.AddField(field));
     }
 
-    public void RegisterCbo(IdentifierDto identifier, CboDto cbo)
-    {
-        AddRegistry(identifier.FullName, classBuilder => classBuilder.AddCbo(cbo));
-    }
-
     public void RegisterAtfd(IdentifierDto identifier, AtfdDto atfd)
     {
         AddRegistry(identifier.FullName, classBuilder => classBuilder.AddAtfd(atfd));
@@ -55,7 +51,7 @@ public sealed class ClassModelsBuilder(ILogger logger)
         AddRegistry(identifier.FullName, classBuilder => classBuilder.AddTcc(tcc));
     }
 
-    public IEnumerable<ClassModel> Build()
+    public IEnumerable<ClassModel> Build(ILogger logger)
     {
         List<ClassModel> models = [];
 
@@ -73,6 +69,29 @@ public sealed class ClassModelsBuilder(ILogger logger)
         }
 
         return models;
+    }
+
+    public void Fill(ClassModelsBuilder other)
+    {
+        foreach (KeyValuePair<string, ClassModelBuilder> kvp in _namespaceToBuilder)
+        {
+            ClassModelBuilder? builder = null;
+            bool builderExists = false;
+
+            if (other._namespaceToBuilder.TryGetValue(kvp.Key, out ClassModelBuilder? existingBuilder))
+            {
+                builder = existingBuilder;
+                builderExists = true;
+            }
+            
+            builder ??= new ClassModelBuilder();
+            kvp.Value.Fill(builder);
+
+            if (!builderExists)
+            {
+                other._namespaceToBuilder.TryAdd(kvp.Key, builder);
+            }
+        }
     }
 
     private void AddRegistry(string modelNamespace, Action<ClassModelBuilder> registryAction)

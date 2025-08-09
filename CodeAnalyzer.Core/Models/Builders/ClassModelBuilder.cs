@@ -1,34 +1,17 @@
-using System.Collections.Concurrent;
 using CodeAnalyzer.Core.Identifiers;
+using CodeAnalyzer.Core.Interfaces;
 using CodeAnalyzer.Core.Logging.Interfaces;
 using CodeAnalyzer.Core.Models.Enums;
 using CodeAnalyzer.Core.Models.Stats.Data;
 
 namespace CodeAnalyzer.Core.Models.Builders;
 
-public class ClassModelBuilder
+public class ClassModelBuilder : IFillable<ClassModelBuilder>
 {
-    private struct Snapshot
-    {
-        public required MethodModel[] Methods { get; init; }
-        public required PropertyModel[] Properties { get; init; }
-        public required FieldModel[] Fields { get; init; }
-        
-        public required CboDto? Cbo { get; init; }
-        public required AtfdDto? Atfd { get; init; }
-        public required TccDto? Tcc { get; init; }
-        
-        public required IdentifierDto? Identifier { get; init; }
-        public required ClassType? ClassType { get; init; }
-    }
+    private readonly List<MethodModel> _methods = [];
+    private readonly List<PropertyModel> _properties = [];
+    private readonly List<FieldModel> _fields = [];
     
-    private readonly Lock _lock = new();
-    
-    private readonly ConcurrentBag<MethodModel> _methods = [];
-    private readonly ConcurrentBag<PropertyModel> _properties = [];
-    private readonly ConcurrentBag<FieldModel> _fields = [];
-    
-    private CboDto? _cbo;
     private AtfdDto? _atfd;
     private TccDto? _tcc;
     private IdentifierDto? _identifier;
@@ -36,12 +19,8 @@ public class ClassModelBuilder
 
     public ClassModelBuilder WithIdentifier(IdentifierDto identifier, ClassType classType)
     {
-        lock (_lock)
-        {
-            _identifier = identifier;
-            _classType = classType;
-        }
-        
+        _identifier = identifier;
+        _classType = classType;
         return this;
     }
 
@@ -63,72 +42,85 @@ public class ClassModelBuilder
         return this;
     }
 
-    public ClassModelBuilder AddCbo(CboDto cbo)
-    {
-        lock (_lock)
-        {
-            _cbo = cbo;
-        }
-        
-        return this;
-    }
-
     public ClassModelBuilder AddAtfd(AtfdDto atfd)
     {
-        lock (_lock)
-        {
-            _atfd = atfd;
-        }
-        
+        _atfd = atfd;
         return this;
     }
 
     public ClassModelBuilder AddTcc(TccDto tcc)
     {
-        lock (_lock)
-        {
-            _tcc = tcc;
-        }
-        
+        _tcc = tcc;
         return this;
     }
 
     public ClassModel Build()
     {
-        Snapshot snap = TakeSnapshot();
+        ArgumentNullException.ThrowIfNull(_identifier, nameof(_identifier));
+        ArgumentNullException.ThrowIfNull(_classType, nameof(_classType));
         
-        ArgumentNullException.ThrowIfNull(snap.Identifier, nameof(snap.Identifier));
-        ArgumentNullException.ThrowIfNull(snap.ClassType, nameof(snap.ClassType));
-        
-        ClassModel model = new(snap.Identifier, snap.ClassType.Value, snap.Methods, snap.Properties, snap.Fields);
+        ClassModel model = new(_identifier, _classType.Value, _methods, _properties, _fields);
 
-        if (snap.Cbo is not null)
+        if (_atfd is not null)
         {
-            model.Stats.Cbo = snap.Cbo;
+            model.Stats.Atfd = _atfd;
         }
 
-        if (snap.Atfd is not null)
+        if (_tcc is not null)
         {
-            model.Stats.Atfd = snap.Atfd;
-        }
-
-        if (snap.Tcc is not null)
-        {
-            model.Stats.Tcc = snap.Tcc;
+            model.Stats.Tcc = _tcc;
         }
 
         return model;
     }
+    
+    public void Fill(ClassModelBuilder other)
+    {
+        if (_identifier is not null && _classType.HasValue)
+        {
+            other.WithIdentifier(_identifier, _classType.Value);
+        }
+
+        if (_atfd is not null)
+        {
+            AtfdDto atfd = other._atfd is not null
+                ? _atfd.Join(other._atfd)
+                : _atfd;
+            
+            other.AddAtfd(atfd);
+        }
+
+        if (_tcc is not null)
+        {
+            TccDto tcc = other._tcc is not null
+                ? _tcc.Join(other._tcc)
+                : _tcc;
+            
+            other.AddTcc(tcc);
+        }
+
+        foreach (MethodModel method in _methods)
+        {
+            other.AddMethod(method);
+        }
+
+        foreach (PropertyModel property in _properties)
+        {
+            other.AddProperty(property);
+        }
+
+        foreach (FieldModel field in _fields)
+        {
+            other.AddField(field);
+        }
+    }
 
     internal void DumpData(ILogger logger)
     {
-        Snapshot snap = TakeSnapshot();
-        
-        logger.Info($"Identifier: {snap.Identifier}");
-        logger.Info($"ClassType: {snap.ClassType}");
-        logger.Info($"Cbo: {snap.Cbo}");
-        logger.Info($"Atfd: {snap.Atfd}");
-        logger.Info($"Tcc: {snap.Tcc}");
+        logger.Info($"Identifier: {_identifier}");
+        logger.Info($"ClassType: {_classType}");
+        logger.Info($"Atfd: {_atfd}");
+        logger.Info($"Tcc: {_tcc}");
 
         try
         {
@@ -155,26 +147,6 @@ public class ClassModelBuilder
         finally
         {
             logger.CloseLevel();
-        }
-    }
-
-    private Snapshot TakeSnapshot()
-    {
-        lock (_lock)
-        {
-            return new Snapshot
-            {
-                Methods = _methods.ToArray(),
-                Properties = _properties.ToArray(),
-                Fields = _fields.ToArray(),
-                
-                Cbo = _cbo,
-                Atfd = _atfd,
-                Tcc = _tcc,
-                
-                Identifier = _identifier,
-                ClassType = _classType,
-            };
         }
     }
 }

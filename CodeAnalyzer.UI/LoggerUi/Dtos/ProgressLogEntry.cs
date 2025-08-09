@@ -56,7 +56,10 @@ internal sealed class ProgressLogEntry : LogEntry, IProgress
 
     private void SetProgressTitle()
     {
-        _progressTitle = $"[{Current}/{Total}] {_originalTitle}";
-        base.Title = _progressTitle;
+        lock (_lock)
+        {
+            _progressTitle = $"[{_current}/{_total}] {_originalTitle}";
+            base.Title = _progressTitle;
+        }
     }
 }

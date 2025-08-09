@@ -16,7 +16,7 @@ namespace CodeAnalyzer.Parser;
 public class CodeParser(IWarningRegistry warningRegistry, ILogger logger)
 {
     private readonly ConcurrentBag<Dictionary<IdentifierDto, CboDto>> _cboMaps = [];
-    private readonly ClassModelsBuilder _modelsBuilder = new(logger);
+    private readonly ConcurrentBag<ClassModelsBuilder> _classBuilders = [];
     private CSharpCompilation? _compilation;
     private IProgress? _progress;
     private CancellationTokenSource? _cancellationTokenSource;
@@ -41,7 +41,7 @@ public class CodeParser(IWarningRegistry warningRegistry, ILogger logger)
 
             ParallelOptions options = new()
             {
-                MaxDegreeOfParallelism = Environment.ProcessorCount,
+                MaxDegreeOfParallelism = 6,
                 CancellationToken = cancellationToken
             };
             
@@ -50,7 +50,8 @@ public class CodeParser(IWarningRegistry warningRegistry, ILogger logger)
             await Parallel.ForEachAsync(_compilation.SyntaxTrees, options, VisitRootAsync);
 
             Dictionary<IdentifierDto, CboDto> cboMap = JoinCboMaps();
-            List<ClassModel> models = _modelsBuilder.Build().ToList();
+            ClassModelsBuilder builder = JoinClassBuilders();
+            List<ClassModel> models = builder.Build(logger).ToList();
             foreach (ClassModel model in models)
             {
                 model.Stats.Cbo = cboMap.TryGetValue(model.Identifier, out CboDto? cbo) ? cbo : CboDto.Empty;
@@ -76,7 +77,7 @@ public class CodeParser(IWarningRegistry warningRegistry, ILogger logger)
             ArgumentNullException.ThrowIfNull(_compilation, nameof(_compilation));
             ArgumentNullException.ThrowIfNull(_progress, nameof(_progress));
 
-            CodeWalker walker = new(new CollectorFactory(warningRegistry), _compilation, _modelsBuilder);
+            CodeWalker walker = new(new CollectorFactory(warningRegistry), _compilation);
             SyntaxNode rootNode = await tree.GetRootAsync(cancellationToken);
 
             if (cancellationToken.IsCancellationRequested)
@@ -86,12 +87,15 @@ public class CodeParser(IWarningRegistry warningRegistry, ILogger logger)
 
             walker.Visit(rootNode);
             _cboMaps.Add(walker.CboMap);
+            _classBuilders.Add(walker.ClassBuilder);
     
             stopwatch.Stop();
             logger.Info(_progress, $"Chodzenie po drzewie {tree.FilePath} [{tree.Length}] [{stopwatch.ElapsedMilliseconds} ms]");
         }
-        catch
+        catch (Exception ex)
         {
+            logger.Exception(ex);
+            
             if (!cancellationToken.IsCancellationRequested && _cancellationTokenSource is not null)
             {
                 await _cancellationTokenSource.CancelAsync();
@@ -120,6 +124,18 @@ public class CodeParser(IWarningRegistry warningRegistry, ILogger logger)
         }
         
         return joinedMap;
+    }
+
+    private ClassModelsBuilder JoinClassBuilders()
+    {
+        ClassModelsBuilder joinedClassBuilders = new();
+
+        foreach (ClassModelsBuilder builder in _classBuilders)
+        {
+            builder.Fill(joinedClassBuilders);
+        }
+        
+        return joinedClassBuilders;
     }
 
     private static CboDto JoinCbo(CboDto cbo1, CboDto cbo2)
