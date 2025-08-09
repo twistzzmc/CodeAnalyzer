@@ -18,7 +18,8 @@ public sealed class ModifierGuard(IWarningRegistry warningRegistry)
         Modifiers.VIRTUAL,
         Modifiers.ABSTRACT,
         Modifiers.OVERRIDE,
-        Modifiers.EXTERN
+        Modifiers.EXTERN,
+        Modifiers.NEW
     });
 
     public void GuardAgainstUnknown(IEnumerable<string> modifiers)

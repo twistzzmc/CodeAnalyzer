@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Diagnostics;
 using CodeAnalyzer.Core.Identifiers;
 using CodeAnalyzer.Core.Logging.Interfaces;
 using CodeAnalyzer.Core.Models;
@@ -33,31 +34,45 @@ public class CodeParser(IWarningRegistry warningRegistry, ILogger logger)
         _compilation = Compile(codes);
         _progress = logger.OpenProgress(_compilation.SyntaxTrees.Length, "Asynchroniczne Przeszukiwanie drzew");
 
-        _cancellationTokenSource = new CancellationTokenSource();
-        CancellationToken cancellationToken = _cancellationTokenSource.Token;
-
-        ParallelOptions options = new()
+        try
         {
-            MaxDegreeOfParallelism = Environment.ProcessorCount,
-            CancellationToken = cancellationToken
-        };
+            _cancellationTokenSource = new CancellationTokenSource();
+            CancellationToken cancellationToken = _cancellationTokenSource.Token;
 
-        await Parallel.ForEachAsync(_compilation.SyntaxTrees, options, VisitRootAsync);
+            ParallelOptions options = new()
+            {
+                MaxDegreeOfParallelism = Environment.ProcessorCount,
+                CancellationToken = cancellationToken
+            };
+            
+            Stopwatch stopwatch = Stopwatch.StartNew();
 
-        Dictionary<IdentifierDto, CboDto> cboMap = JoinCboMaps();
-        List<ClassModel> models = _modelsBuilder.Build().ToList();
-        foreach (ClassModel model in models)
-        {
-            model.Stats.Cbo = cboMap.TryGetValue(model.Identifier, out CboDto? cbo) ? cbo : CboDto.Empty;
+            await Parallel.ForEachAsync(_compilation.SyntaxTrees, options, VisitRootAsync);
+
+            Dictionary<IdentifierDto, CboDto> cboMap = JoinCboMaps();
+            List<ClassModel> models = _modelsBuilder.Build().ToList();
+            foreach (ClassModel model in models)
+            {
+                model.Stats.Cbo = cboMap.TryGetValue(model.Identifier, out CboDto? cbo) ? cbo : CboDto.Empty;
+            }
+    
+            stopwatch.Stop();
+            logger.Success($"Pomyślnie przeszukano drzewa. Czas trwania: {stopwatch.ElapsedMilliseconds / 1000} s");
+
+            return models;
         }
-        
-        return models;
+        finally
+        {
+            logger.CloseLevel();
+        }
     }
     
     private async ValueTask VisitRootAsync(SyntaxTree tree, CancellationToken cancellationToken = default)
     {
         try
         {
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            
             ArgumentNullException.ThrowIfNull(_compilation, nameof(_compilation));
             ArgumentNullException.ThrowIfNull(_progress, nameof(_progress));
 
@@ -70,10 +85,10 @@ public class CodeParser(IWarningRegistry warningRegistry, ILogger logger)
             }
 
             walker.Visit(rootNode);
-
             _cboMaps.Add(walker.CboMap);
-
-            logger.Info(_progress, $"Chodzenie po drzewie {tree.FilePath} [{tree.Length}]");
+    
+            stopwatch.Stop();
+            logger.Info(_progress, $"Chodzenie po drzewie {tree.FilePath} [{tree.Length}] [{stopwatch.ElapsedMilliseconds} ms]");
         }
         catch
         {

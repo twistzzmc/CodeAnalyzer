@@ -14,4 +14,5 @@ public static class Modifiers
     public const string ABSTRACT = "abstract";
     public const string OVERRIDE = "override";
     public const string EXTERN = "extern";
+    public const string NEW = "new";
 }
