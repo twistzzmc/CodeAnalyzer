@@ -35,7 +35,7 @@ public partial class MainWindow : Window
 
     private void LogWarning(object? sender, WarningData e)
     {
-        LogEntry log = new SimpleLogEntryBuilder($"[Ostrzeżenie] {e.Identifier.FullName}")
+        LogEntry log = new SimpleLogEntryBuilder($"[Ostrzeżenie] {e.Identifier?.FullName}")
             .WithChild($"Typ modelu: {e.ModelType}")
             .WithChild($"Typ ostrzeżenia: {e.WarningType}")
             .WithChild($"Wiadomość: {e.Message}")

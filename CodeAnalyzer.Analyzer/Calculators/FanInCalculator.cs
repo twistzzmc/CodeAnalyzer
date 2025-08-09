@@ -1,6 +1,5 @@
 using CodeAnalyzer.Analyzer.Interfaces;
 using CodeAnalyzer.Core.Models;
-using CodeAnalyzer.Core.Models.Stats;
 using CodeAnalyzer.Core.Models.Stats.Data;
 
 namespace CodeAnalyzer.Analyzer.Calculators;
@@ -21,11 +20,13 @@ internal sealed class FanInCalculator(IEnumerable<ClassModel> allClasses) : ICla
                 continue;
             }
 
-            if (HasReference(model, otherClass))
+            if (!HasReference(model, otherClass))
             {
-                classesWithReferencesCount++;
-                referenceClasses.Add(otherClass);
+                continue;
             }
+            
+            classesWithReferencesCount++;
+            referenceClasses.Add(otherClass);
         }
 
         double fanInPercentage = CalculatePercentage(containsSelfInAllClasses, classesWithReferencesCount);

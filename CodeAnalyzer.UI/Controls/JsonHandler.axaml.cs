@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -22,6 +21,8 @@ public partial class JsonHandler : UserControl
     public static readonly StyledProperty<ILogger> LoggerProperty =
         AvaloniaProperty.Register<AnalysisControl, ILogger>(nameof(Logger));
     
+    private readonly JsonSerializerOptions _jsonOptions;
+    
     public ILoggerUi ResultLogger
     {
         get => GetValue(ResultLoggerProperty);
@@ -37,6 +38,14 @@ public partial class JsonHandler : UserControl
     public JsonHandler()
     {
         InitializeComponent();
+        
+        _jsonOptions = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            PropertyNameCaseInsensitive = true
+        };
+        
+        _jsonOptions.Converters.Add(new LogEntryJsonConverter());
     }
 
     private async void OnExportResultClicked(object? sender, RoutedEventArgs e)
@@ -44,31 +53,27 @@ public partial class JsonHandler : UserControl
         TopLevel? top = TopLevel.GetTopLevel(this);
         if (top is null) return;
         
-        var file = await top.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+        IStorageFile? file = await top.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
         {
             Title = "Zapisz jako JSON",
             SuggestedFileName = "raport.json",
-            FileTypeChoices = new[]
-            {
+            FileTypeChoices =
+            [
                 new FilePickerFileType("JSON file")
                 {
-                    Patterns = new[] { "*.json" }
+                    Patterns = ["*.json"]
                 }
-            },
+            ],
             DefaultExtension = "json"
         });
 
-        if (file is not null)
+        if (file is null)
         {
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = true,
-                PropertyNameCaseInsensitive = true
-            };
-            options.Converters.Add(new LogEntryJsonConverter());
-            await using Stream stream = await file.OpenWriteAsync();
-            await JsonSerializer.SerializeAsync(stream, ResultLogger.Collect(), options);
+            return;
         }
+        
+        await using Stream stream = await file.OpenWriteAsync();
+        await JsonSerializer.SerializeAsync(stream, ResultLogger.Collect(), _jsonOptions);
     }
 
     private async void OnImportResultClicked(object? sender, RoutedEventArgs e)
@@ -82,7 +87,7 @@ public partial class JsonHandler : UserControl
             AllowMultiple = false,
             FileTypeFilter = new List<FilePickerFileType>
             {
-                new("JSON") { Patterns = new[] { "*.json" } }
+                new("JSON") { Patterns = ["*.json"] }
             }
         };
 
@@ -92,16 +97,10 @@ public partial class JsonHandler : UserControl
             return;
 
         IStorageFile file = files[0];
+        
+        await using Stream stream = await file.OpenReadAsync();
+        IEnumerable<LogEntry>? entries = await JsonSerializer.DeserializeAsync<IEnumerable<LogEntry>>(stream, _jsonOptions);
 
-        var jsonoptions = new JsonSerializerOptions()
-        {
-            WriteIndented = true,
-            PropertyNameCaseInsensitive = true
-        };
-        jsonoptions.Converters.Add(new LogEntryJsonConverter());
-        using var stream = await file.OpenReadAsync();
-        IEnumerable<LogEntry>? entries = await JsonSerializer.DeserializeAsync<IEnumerable<LogEntry>>(stream, jsonoptions);
-
-        entries?.ToList().ForEach(e => ResultLogger.AddEntry(e));
+        entries?.ToList().ForEach(logEntry => ResultLogger.AddEntry(logEntry));
     }
 }

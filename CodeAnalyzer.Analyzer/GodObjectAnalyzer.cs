@@ -4,11 +4,8 @@ using CodeAnalyzer.Analyzer.Configurations;
 using CodeAnalyzer.Analyzer.Configurations.Dtos;
 using CodeAnalyzer.Analyzer.Enums;
 using CodeAnalyzer.Analyzer.Interfaces;
-using CodeAnalyzer.Analyzer.Results;
 using CodeAnalyzer.Analyzer.Results.GodObject;
 using CodeAnalyzer.Core.Models;
-using CodeAnalyzer.Core.Models.Enums;
-using MathNet.Numerics.Statistics;
 
 namespace CodeAnalyzer.Analyzer;
 
@@ -27,7 +24,7 @@ public sealed class GodObjectAnalyzer(List<ClassModel> allClassModels)
 
     public PercentileThresholds Thresholds => _percentileIssueCalculator.Thresholds;
     
-    public GodObjectConfiguration Configuration { get; } = new GodObjectConfiguration()
+    public GodObjectConfiguration Configuration { get; } = new()
     {
         ProblemThreshold = GodObjectParameters.DefaultProblem,
         WarningThreshold = GodObjectParameters.DefaultWarning

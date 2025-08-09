@@ -8,17 +8,17 @@ namespace CodeAnalyzer.UI.Tools.Json;
 
 internal sealed class LogEntryJsonConverter : JsonConverter<LogEntry>
 {
-    public override LogEntry? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override LogEntry Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         using JsonDocument doc = JsonDocument.ParseValue(ref reader);
         JsonElement root = doc.RootElement;
 
-        var title = root.GetProperty("Title").GetString() ?? string.Empty;
-        var priority = root.TryGetProperty("Priority", out var p)
+        string title = root.GetProperty("Title").GetString() ?? string.Empty;
+        LogPriority priority = root.TryGetProperty("Priority", out JsonElement p)
             ? Enum.Parse<LogPriority>(p.GetString() ?? "Info")
             : LogPriority.Info;
 
-        var logEntry = new LogEntry(title, priority);
+        LogEntry logEntry = new(title, priority);
 
         if (root.TryGetProperty("Key", out var keyProp))
         {
@@ -30,15 +30,17 @@ internal sealed class LogEntryJsonConverter : JsonConverter<LogEntry>
             logEntry.IsSuccess = isSuccessProp.GetBoolean();
         }
 
-        if (root.TryGetProperty("Children", out var childrenProp) && childrenProp.ValueKind == JsonValueKind.Array)
+        if (!root.TryGetProperty("Children", out var childrenProp) || childrenProp.ValueKind != JsonValueKind.Array)
         {
-            foreach (var child in childrenProp.EnumerateArray())
+            return logEntry;
+        }
+        
+        foreach (JsonElement child in childrenProp.EnumerateArray())
+        {
+            LogEntry? childLog = JsonSerializer.Deserialize<LogEntry>(child.GetRawText(), options);
+            if (childLog is not null)
             {
-                var childLog = JsonSerializer.Deserialize<LogEntry>(child.GetRawText(), options);
-                if (childLog is not null)
-                {
-                    logEntry.AddChild(childLog);
-                }
+                logEntry.AddChild(childLog);
             }
         }
 
@@ -56,7 +58,7 @@ internal sealed class LogEntryJsonConverter : JsonConverter<LogEntry>
 
         writer.WritePropertyName("Children");
         writer.WriteStartArray();
-        foreach (var child in value.Children)
+        foreach (LogEntry child in value.Children)
         {
             JsonSerializer.Serialize(writer, child, options);
         }

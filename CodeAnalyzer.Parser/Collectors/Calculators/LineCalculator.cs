@@ -1,4 +1,4 @@
-using CodeAnalyzer.Parser.Collectors.Interfaces;
+using CodeAnalyzer.Parser.Collectors.Calculators.Interfaces;
 using Microsoft.CodeAnalysis.CSharp;
 
 namespace CodeAnalyzer.Parser.Collectors.Calculators;

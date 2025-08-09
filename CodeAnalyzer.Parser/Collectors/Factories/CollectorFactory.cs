@@ -1,7 +1,6 @@
 using CodeAnalyzer.Core.Logging.Interfaces;
 using CodeAnalyzer.Core.Models;
 using CodeAnalyzer.Parser.Collectors.Interfaces;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 

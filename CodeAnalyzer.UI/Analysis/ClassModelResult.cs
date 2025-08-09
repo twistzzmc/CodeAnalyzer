@@ -1,6 +1,4 @@
-using System.Collections.Generic;
 using CodeAnalyzer.Analyzer;
-using CodeAnalyzer.Analyzer.Results;
 using CodeAnalyzer.Analyzer.Results.GodObject;
 using CodeAnalyzer.Core.Models;
 using CodeAnalyzer.Core.Models.Stats;
@@ -35,7 +33,7 @@ internal sealed class ClassModelResult(
     {
         GodObjectResult = godObjectAnalyzer.Analyze(Model);
         GodObjectEntry = godObjectResultBuilder.Build(GodObjectResult);
-        LogEntry newStatsEntry = statisticsBuilder.Build(model.Stats);
+        LogEntry newStatsEntry = statisticsBuilder.Build(Model.Stats);
 
         ModelEntry.RemoveChildren(godObjectResultBuilder.Key, statisticsBuilder.Key);
         

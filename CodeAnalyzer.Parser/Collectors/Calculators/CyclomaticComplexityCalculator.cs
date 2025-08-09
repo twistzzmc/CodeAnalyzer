@@ -42,11 +42,11 @@ internal sealed class CyclomaticComplexityCalculator(
         return new PropertyCyclomaticComplexity(get, set);
     }
 
-    private int HandleNullGraph(SemanticModel semanticModel, CSharpSyntaxNode options)
+    private void HandleNullGraph(SemanticModel semanticModel, CSharpSyntaxNode options)
     {
         if (options is AccessorDeclarationSyntax)
         {
-            return 1;
+            return;
         }
         
         ISymbol? methodSymbol = semanticModel.GetDeclaredSymbol(options);
@@ -55,18 +55,17 @@ internal sealed class CyclomaticComplexityCalculator(
         if (containingType?.TypeKind == TypeKind.Interface)
         {
             // Metoda interfejsu ma złożoność równą 0 i brak grafu
-            return 0;
+            return;
         }
 
         if (methodSymbol?.IsAbstract == true || methodSymbol?.IsExtern == true)
         {
             // Metoda abstrakcyjna lub "extern" nie musi mieć implementacji
-            return 0;
+            return;
         }
                 
-        warningRegistry.RegisterWarning(WarningType.CyclomaticComplexity, 
+        warningRegistry.RegisterWarning(WarningType.CyclomaticComplexity,
             "Nie udało się zbydować ControlFlowGraph");
-        return 0;
     }
     
     private static int CalculateCyclomaticComplexity(ControlFlowGraph cfg)

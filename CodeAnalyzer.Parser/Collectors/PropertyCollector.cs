@@ -1,14 +1,9 @@
 using CodeAnalyzer.Core.Logging.Enums;
 using CodeAnalyzer.Core.Logging.Interfaces;
 using CodeAnalyzer.Core.Models;
-using CodeAnalyzer.Core.Models.Enums;
-using CodeAnalyzer.Core.Models.SubModels;
 using CodeAnalyzer.Core.Models.SubModels.Extensions;
 using CodeAnalyzer.Parser.Collectors.Calculators.Factories;
 using CodeAnalyzer.Parser.Collectors.Calculators.Interfaces;
-using CodeAnalyzer.Parser.Collectors.Factories;
-using CodeAnalyzer.Parser.Collectors.Interfaces;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 

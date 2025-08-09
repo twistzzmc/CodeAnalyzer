@@ -1,7 +1,7 @@
 using CodeAnalyzer.Core.Logging.Enums;
 using CodeAnalyzer.Core.Logging.Interfaces;
 using CodeAnalyzer.Core.Models.Enums;
-using CodeAnalyzer.Parser.Collectors.Interfaces;
+using CodeAnalyzer.Parser.Collectors.Calculators.Interfaces;
 using Microsoft.CodeAnalysis;
 
 namespace CodeAnalyzer.Parser.Collectors.Calculators;
@@ -49,10 +49,7 @@ public sealed class AccessModifierCalculator(IWarningRegistry warningRegistry)
                 continue;
             }
 
-            if (CheckModifier(ref _isPrivate, PRIVATE, modifier.Text))
-            {
-                continue;
-            }
+            CheckModifier(ref _isPrivate, PRIVATE, modifier.Text);
         }
     }
 

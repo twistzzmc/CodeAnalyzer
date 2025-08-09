@@ -1,7 +1,5 @@
 using CodeAnalyzer.Core.Identifiers;
 using CodeAnalyzer.Core.Logging.Interfaces;
-using CodeAnalyzer.Parser.Extensions;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 

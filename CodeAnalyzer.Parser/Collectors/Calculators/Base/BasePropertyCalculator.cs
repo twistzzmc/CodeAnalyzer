@@ -1,5 +1,5 @@
 using CodeAnalyzer.Core.Models.Interfaces;
-using CodeAnalyzer.Parser.Collectors.Interfaces;
+using CodeAnalyzer.Parser.Collectors.Calculators.Interfaces;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 

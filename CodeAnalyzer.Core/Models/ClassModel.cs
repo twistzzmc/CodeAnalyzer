@@ -1,9 +1,7 @@
-using System.Text;
 using CodeAnalyzer.Core.Identifiers;
 using CodeAnalyzer.Core.Models.Enums;
 using CodeAnalyzer.Core.Models.Interfaces;
 using CodeAnalyzer.Core.Models.Stats;
-using CodeAnalyzer.Core.Models.SubModels;
 
 namespace CodeAnalyzer.Core.Models;
 

@@ -1,4 +1,3 @@
-using CodeAnalyzer.Core.Logging.Interfaces;
 using CodeAnalyzer.Core.Models;
 using CodeAnalyzer.Core.Models.Enums;
 using CodeAnalyzer.Core.Models.Stats;

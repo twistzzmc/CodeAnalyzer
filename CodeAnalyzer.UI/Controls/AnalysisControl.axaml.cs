@@ -1,22 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.Threading;
-using CodeAnalyzer.Analyzer;
-using CodeAnalyzer.Analyzer.Results;
 using CodeAnalyzer.Core.Logging.Interfaces;
-using CodeAnalyzer.Core.Models;
-using CodeAnalyzer.Parser;
 using CodeAnalyzer.Parser.Dtos;
 using CodeAnalyzer.UI.Analysis;
-using CodeAnalyzer.UI.Base;
 using CodeAnalyzer.UI.Interfaces;
-using CodeAnalyzer.UI.LoggerUi.Builders.ModelEntryBuilders;
 using CodeAnalyzer.UI.LoggerUi.Interfaces;
 
 namespace CodeAnalyzer.UI.Controls;

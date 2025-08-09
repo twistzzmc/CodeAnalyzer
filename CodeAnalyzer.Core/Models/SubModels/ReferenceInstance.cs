@@ -1,5 +1,3 @@
-using CodeAnalyzer.Core.Identifiers;
-
 namespace CodeAnalyzer.Core.Models.SubModels;
 
 public sealed class ReferenceInstance

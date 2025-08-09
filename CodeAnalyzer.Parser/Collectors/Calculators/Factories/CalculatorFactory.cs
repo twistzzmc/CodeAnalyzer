@@ -3,7 +3,6 @@ using CodeAnalyzer.Core.Models.Enums;
 using CodeAnalyzer.Core.Models.Interfaces;
 using CodeAnalyzer.Core.Models.SubModels;
 using CodeAnalyzer.Parser.Collectors.Calculators.Interfaces;
-using CodeAnalyzer.Parser.Collectors.Interfaces;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
