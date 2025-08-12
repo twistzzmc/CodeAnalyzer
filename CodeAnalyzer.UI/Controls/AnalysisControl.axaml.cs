@@ -113,7 +113,7 @@ public partial class AnalysisControl : UserControl
 
         try
         {
-            await _analyzerHelper.RunMtlAnalysis(ResultLogger);
+            await _analyzerHelper.RunMtcAnalysis(ResultLogger);
         }
         catch (Exception ex)
         {

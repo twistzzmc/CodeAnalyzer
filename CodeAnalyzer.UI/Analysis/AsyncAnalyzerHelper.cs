@@ -21,7 +21,7 @@ internal sealed class AsyncAnalyzerHelper
 {
     private readonly GodObjectResultLogBuilder _godObjectResultLogBuilder = new();
     private readonly PercentileThresholdsBuilder _percentileThresholdsBuilder = new();
-    private readonly MtlResultLogBuilder _mtlResultLogBuilder = new();
+    private readonly MtcResultLogBuilder _mtcResultLogBuilder = new();
     private readonly ClassEntryBuilder _classEntryBuilder = new();
     private readonly List<ClassModelResult> _results = [];
     private readonly LogEntry _classEntry = new("Liczba znalezionych klas: 0");
@@ -59,18 +59,18 @@ internal sealed class AsyncAnalyzerHelper
         });
     }
 
-    public async Task RunMtlAnalysis(ILoggerUi logger)
+    public async Task RunMtcAnalysis(ILoggerUi logger)
     {
         await Task.Run(() =>
         {
-            MtlAnalyzer mtlAnalyzer = new();
-            List<MtlResultDto> mtlAnalysisResults = [];
+            MtcAnalyzer mtcAnalyzer = new();
+            List<MtcResultDto> mtcAnalysisResults = [];
             foreach (ClassModelResult model in _results)
             {
-                mtlAnalysisResults.AddRange(mtlAnalyzer.Analyze(model.Model.Methods));
+                mtcAnalysisResults.AddRange(mtcAnalyzer.Analyze(model.Model.Methods));
             }
             
-            logger.AddEntry(_mtlResultLogBuilder.Build(mtlAnalysisResults));
+            logger.AddEntry(_mtcResultLogBuilder.Build(mtcAnalysisResults));
         });
     }
 

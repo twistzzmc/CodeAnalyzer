@@ -8,17 +8,17 @@ using CodeAnalyzer.UI.LoggerUi.Interfaces;
 
 namespace CodeAnalyzer.UI.LoggerUi.Builders.AnalysisResultBuilders;
 
-internal sealed class MtlResultLogBuilder : IModelEntryBuilder<IEnumerable<MtlResultDto?>>
+internal sealed class MtcResultLogBuilder : IModelEntryBuilder<IEnumerable<MtcResultDto?>>
 {
     private LogEntry? _mainEntry;
     
-    public string Key => "MtlResult";
+    public string Key => "MtcResult";
     
-    public LogEntry Build(IEnumerable<MtlResultDto?> source)
+    public LogEntry Build(IEnumerable<MtcResultDto?> source)
     {
-        List<MtlResultDto> resultList = source
+        List<MtcResultDto> resultList = source
             .Where(r => r is not null)
-            .Cast<MtlResultDto>()
+            .Cast<MtcResultDto>()
             .Where(r => r.IssueType == AnalysisIssueType.MethodTooLong)
             .Where(r => r.Certainty != IssueCertainty.Info)
             .ToList();
@@ -33,7 +33,7 @@ internal sealed class MtlResultLogBuilder : IModelEntryBuilder<IEnumerable<MtlRe
         return _mainEntry;
     }
 
-    private void AddWarningOrProblem(MtlResultDto result)
+    private void AddWarningOrProblem(MtcResultDto result)
     {
         MethodModel method = result.Model;
 
