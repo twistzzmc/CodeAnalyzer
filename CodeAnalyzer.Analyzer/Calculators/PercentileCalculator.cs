@@ -34,7 +34,7 @@ internal sealed class PercentileCalculator(IEnumerable<ClassModel> allClassModel
         _percentiles[StatType.CouplingBetweenObjects] = GetSinglePercentileList(stats, s => s.Cbo.Cbo);
         _percentiles[StatType.AfferentCoupling] = GetSinglePercentileList(stats, s => s.Ca.Ca);
         _percentiles[StatType.TightClassCohesion] = GetSinglePercentileList(stats, s => s.Tcc.Tcc);
-        _percentiles[StatType.WeightedMethodsPerClass] = GetSinglePercentileList(stats, s => s.Wmpc.Wmpc);
+        _percentiles[StatType.WeightedMethodsPerClass] = GetSinglePercentileList(stats, s => s.Wmc.Wmc);
     }
     
     private double CalculatePercentile(StatType statType, double percentile)

@@ -12,7 +12,7 @@ internal sealed class PercentileThresholdsBuilder : IModelEntryBuilder<Percentil
     {
         return new SimpleLogEntryBuilder("Progi dla zmiennych metryk")
             .WithChild($"ATFD P90: {source.AtfdP90}")
-            .WithChild($"WMPC P90: {source.WmpcP90}")
+            .WithChild($"WMC P90: {source.WmcP90}")
             .WithChild($"TCC P10: {source.TccP10}")
             .WithChild($"CBO P90: {source.CboP90}")
             .WithChild($"Ca P90: {source.CaP90}")

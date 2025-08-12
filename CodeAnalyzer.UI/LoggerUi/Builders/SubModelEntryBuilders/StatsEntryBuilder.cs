@@ -16,7 +16,7 @@ internal sealed class StatsEntryBuilder : IModelEntryBuilder<Statistics>
         return new SimpleLogEntryBuilder("Statystyki")
             .WithKey(Key)
             .WithChild(BuildCbo(model.IsCboSet, model.Cbo))
-            .WithChild(BuildWmpc(model.IsWmpcSet, model.Wmpc))
+            .WithChild(BuildWmc(model.IsWmcSet, model.Wmc))
             .WithChild(BuildCa(model.IsCaSet, model.Ca))
             .WithChild(BuildAtfd(model.IsAtfdSet, model.Atfd))
             .WithChild(BuildTcc(model.IsTccSet, model.Tcc))
@@ -30,9 +30,9 @@ internal sealed class StatsEntryBuilder : IModelEntryBuilder<Statistics>
         return entry;
     }
 
-    private static LogEntry BuildWmpc(bool isWmpcSet, WmpcDto wmpc)
+    private static LogEntry BuildWmc(bool isWmcSet, WmcDto wmc)
     {
-        return new LogEntry($"[{isWmpcSet}] WMPC: {wmpc.Wmpc}");
+        return new LogEntry($"[{isWmcSet}] WMC: {wmc.Wmc}");
     }
 
     private static LogEntry BuildCa(bool isCaSet, CaDto ca)

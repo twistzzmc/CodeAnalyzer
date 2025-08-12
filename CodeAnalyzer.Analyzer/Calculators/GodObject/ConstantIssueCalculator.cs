@@ -9,7 +9,7 @@ internal sealed class ConstantIssueCalculator
     public ConstantMetric Calculate(ClassModel model)
     {
         double score = CalculateGodObjectScore(
-            model.Stats.Wmpc.Wmpc,
+            model.Stats.Wmc.Wmc,
             model.Stats.Atfd.Atfd,
             model.Stats.Tcc.Tcc,
             model.Stats.Cbo.Cbo,
@@ -19,7 +19,7 @@ internal sealed class ConstantIssueCalculator
             ? IssueCertainty.Problem
             : score >= 60 ? IssueCertainty.Warning : IssueCertainty.Info;
     
-        bool isMarinescu = IsMarinescu(model.Stats.Wmpc.Wmpc, model.Stats.Atfd.Atfd, model.Stats.Tcc.Tcc);
+        bool isMarinescu = IsMarinescu(model.Stats.Wmc.Wmc, model.Stats.Atfd.Atfd, model.Stats.Tcc.Tcc);
         if (!isMarinescu)
         {
             issueCertainty = IssueCertainty.Info;
@@ -33,9 +33,9 @@ internal sealed class ConstantIssueCalculator
         };
     }
     
-    private static bool IsMarinescu(int wmpc, int atfd, double tcc)
+    private static bool IsMarinescu(int wmc, int atfd, double tcc)
     {
-        return wmpc >= 47 && atfd > 5 && tcc < 0.33;
+        return wmc >= 47 && atfd > 5 && tcc < 0.33;
     }
     
     private static double CalculateGodObjectScore(int wmc, int atfd, double tcc, int cbo, int ca)

@@ -22,7 +22,7 @@ internal sealed class MetricsEntryBuilder
         return new SimpleLogEntryBuilder($"Metryki zmienne: [{source.Certainty}, {source.Score}]")
             .WithChild($"Liczba punktów: {source.Score}")
             .WithChildIf(source.IsAtfdHit, "Przekroczono próg AFTD")
-            .WithChildIf(source.IsWmpcHit, "Przekroczono próg WMPC")
+            .WithChildIf(source.IsWmcHit, "Przekroczono próg WMC")
             .WithChildIf(source.IsTccHit, "Przekroczono próg TCC")
             .WithChildIf(source.IsCboHit, "Przekroczono próg CBO")
             .WithChildIf(source.IsCaHit, "Przekroczono próg Ca")

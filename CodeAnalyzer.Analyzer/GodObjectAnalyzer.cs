@@ -13,7 +13,7 @@ public sealed class GodObjectAnalyzer(List<ClassModel> allClassModels)
     : IAnalyzer<GodObjectConfiguration, GodObjectParameters, ClassModel, GodObjectResultDto>
 {
     private readonly CaCalculator _caCalculator = new(allClassModels);
-    private readonly WmpcCalculator _wmpcCalculator = new();
+    private readonly WmcCalculator _wmcCalculator = new();
     private readonly ConstantIssueCalculator _constantIssueCalculator = new();
     private readonly PercentileIssueCalculator _percentileIssueCalculator = new(allClassModels);
     
@@ -78,9 +78,9 @@ public sealed class GodObjectAnalyzer(List<ClassModel> allClassModels)
             throw new ArgumentException("Nie ustawiono statystyk ATFD");
         }
         
-        if (!_model.Stats.IsWmpcSet)
+        if (!_model.Stats.IsWmcSet)
         {
-            throw new ArgumentException("Nie ustawiono statystyk WMPC");
+            throw new ArgumentException("Nie ustawiono statystyk WMC");
         }
         
         if (!_model.Stats.IsCaSet)
@@ -103,6 +103,6 @@ public sealed class GodObjectAnalyzer(List<ClassModel> allClassModels)
     {
         ArgumentNullException.ThrowIfNull(_model);
         _caCalculator.Calculate(_model);
-        _wmpcCalculator.Calculate(_model);
+        _wmcCalculator.Calculate(_model);
     }
 }

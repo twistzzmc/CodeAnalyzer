@@ -9,7 +9,7 @@ public sealed class PercentileMetric
     public required double Score { get; init; }
     
     public required bool IsAtfdHit { get; init; }
-    public required bool IsWmpcHit { get; init; }
+    public required bool IsWmcHit { get; init; }
     public required bool IsTccHit { get; init; }
     public required bool IsCboHit { get; init; }
     public required bool IsCaHit { get; init; }

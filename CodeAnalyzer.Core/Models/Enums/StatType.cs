@@ -23,7 +23,7 @@ public enum StatType
     TightClassCohesion,
     
     /// <summary>
-    /// WMPC
+    /// WMC
     /// </summary>
     WeightedMethodsPerClass
 }
