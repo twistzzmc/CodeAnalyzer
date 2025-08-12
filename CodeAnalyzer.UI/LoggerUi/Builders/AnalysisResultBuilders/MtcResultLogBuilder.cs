@@ -19,7 +19,7 @@ internal sealed class MtcResultLogBuilder : IModelEntryBuilder<IEnumerable<MtcRe
         List<MtcResultDto> resultList = source
             .Where(r => r is not null)
             .Cast<MtcResultDto>()
-            .Where(r => r.IssueType == AnalysisIssueType.MethodTooLong)
+            .Where(r => r.IssueType == AnalysisIssueType.MethodTooComplex)
             .Where(r => r.Certainty != IssueCertainty.Info)
             .ToList();
         

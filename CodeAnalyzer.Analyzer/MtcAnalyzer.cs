@@ -22,12 +22,12 @@ public sealed class MtcAnalyzer : IAnalyzer<MtcConfiguration, MtcParameters, Met
     {
         if (model.Length > Problem.LineLength && model.CyclomaticComplexity > Problem.CyclomaticComplexity)
         {
-            return new MtcResultDto(model, AnalysisIssueType.MethodTooLong, IssueCertainty.Problem);
+            return new MtcResultDto(model, AnalysisIssueType.MethodTooComplex, IssueCertainty.Problem);
         }
         
         if (model.Length > Warning.LineLength && model.CyclomaticComplexity > Warning.CyclomaticComplexity)
         {
-            return new MtcResultDto(model, AnalysisIssueType.MethodTooLong, IssueCertainty.Warning);
+            return new MtcResultDto(model, AnalysisIssueType.MethodTooComplex, IssueCertainty.Warning);
         }
 
         return new MtcResultDto(model, AnalysisIssueType.None, IssueCertainty.Info);
