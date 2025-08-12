@@ -11,16 +11,16 @@ internal sealed class MetricsEntryBuilder
 
     public LogEntry Build(ConstantMetric source)
     {
-        return new SimpleLogEntryBuilder($"Metryki stałe: [{source.Certainty}, {source.CertaintyPercent}]")
-            .WithChild($"Pewność: {source.CertaintyPercent}")
+        return new SimpleLogEntryBuilder($"Metryki stałe: [{source.Certainty}, {source.CertaintyPercent:0.00}]")
+            .WithChild($"Pewność: {source.CertaintyPercent:0.00}")
             .WithChild($"Czy został spełniony próg Marinescu: {source.Marinescu}")
             .Build();
     }
     
     public LogEntry Build(PercentileMetric source)
     {
-        return new SimpleLogEntryBuilder($"Metryki zmienne: [{source.Certainty}, {source.Score}]")
-            .WithChild($"Liczba punktów: {source.Score}")
+        return new SimpleLogEntryBuilder($"Metryki zmienne: [{source.Certainty}, {source.Score:0.00}]")
+            .WithChild($"Liczba punktów: {source.Score:0.00}")
             .WithChildIf(source.IsAtfdHit, "Przekroczono próg AFTD")
             .WithChildIf(source.IsWmcHit, "Przekroczono próg WMC")
             .WithChildIf(source.IsTccHit, "Przekroczono próg TCC")

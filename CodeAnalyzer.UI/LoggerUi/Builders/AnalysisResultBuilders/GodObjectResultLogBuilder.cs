@@ -87,7 +87,7 @@ internal sealed class GodObjectResultLogBuilder :
             .Where(r => r is not null)
             .Cast<GodObjectResultDto>()
             .Where(r => r.Certainty == IssueCertainty.Info)
-            .OrderBy(OrderByBasedOnMetricType)
+            .OrderByDescending(OrderByBasedOnMetricType)
             .Take(10)
             .ToList()
             .ForEach(r => top10Entry.AddChild(Build(r)));
