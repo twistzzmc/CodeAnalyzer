@@ -4,7 +4,7 @@ using CodeAnalyzer.Core.Models.Stats.Data;
 
 namespace CodeAnalyzer.Analyzer.Calculators;
 
-internal sealed class FanInCalculator(IEnumerable<ClassModel> allClasses) : IClassStatCalculator
+internal sealed class CaCalculator(IEnumerable<ClassModel> allClasses) : IClassStatCalculator
 {
     public void Calculate(ClassModel model)
     {
@@ -29,12 +29,12 @@ internal sealed class FanInCalculator(IEnumerable<ClassModel> allClasses) : ICla
             referenceClasses.Add(otherClass);
         }
 
-        double fanInPercentage = CalculatePercentage(containsSelfInAllClasses, classesWithReferencesCount);
+        double caPercentage = CalculatePercentage(containsSelfInAllClasses, classesWithReferencesCount);
         
-        model.Stats.FanIn = new FanInDto()
+        model.Stats.Ca = new CaDto()
         {
-            FanIn = classesWithReferencesCount,
-            FanInPercentage = fanInPercentage,
+            Ca = classesWithReferencesCount,
+            CaPercentage = caPercentage,
             ReferencesClassModels = referenceClasses
         };
     }

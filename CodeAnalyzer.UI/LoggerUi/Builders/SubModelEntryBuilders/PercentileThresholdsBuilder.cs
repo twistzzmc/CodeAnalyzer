@@ -15,7 +15,7 @@ internal sealed class PercentileThresholdsBuilder : IModelEntryBuilder<Percentil
             .WithChild($"WMPC P90: {source.WmpcP90}")
             .WithChild($"TCC P10: {source.TccP10}")
             .WithChild($"CBO P90: {source.CboP90}")
-            .WithChild($"FanIn P90: {source.FanInP90}")
+            .WithChild($"Ca P90: {source.CaP90}")
             .Build();
     }
 }

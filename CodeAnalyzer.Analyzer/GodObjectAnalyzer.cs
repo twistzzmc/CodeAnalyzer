@@ -12,7 +12,7 @@ namespace CodeAnalyzer.Analyzer;
 public sealed class GodObjectAnalyzer(List<ClassModel> allClassModels)
     : IAnalyzer<GodObjectConfiguration, GodObjectParameters, ClassModel, GodObjectResultDto>
 {
-    private readonly FanInCalculator _fanInCalculator = new(allClassModels);
+    private readonly CaCalculator _caCalculator = new(allClassModels);
     private readonly WmpcCalculator _wmpcCalculator = new();
     private readonly ConstantIssueCalculator _constantIssueCalculator = new();
     private readonly PercentileIssueCalculator _percentileIssueCalculator = new(allClassModels);
@@ -83,9 +83,9 @@ public sealed class GodObjectAnalyzer(List<ClassModel> allClassModels)
             throw new ArgumentException("Nie ustawiono statystyk WMPC");
         }
         
-        if (!_model.Stats.IsFanInSet)
+        if (!_model.Stats.IsCaSet)
         {
-            throw new ArgumentException("Nie ustawiono statystyk FanIn");
+            throw new ArgumentException("Nie ustawiono statystyk Ca");
         }
         
         if (!_model.Stats.IsCboSet)
@@ -102,7 +102,7 @@ public sealed class GodObjectAnalyzer(List<ClassModel> allClassModels)
     private void CalculateRemainingStats()
     {
         ArgumentNullException.ThrowIfNull(_model);
-        _fanInCalculator.Calculate(_model);
+        _caCalculator.Calculate(_model);
         _wmpcCalculator.Calculate(_model);
     }
 }

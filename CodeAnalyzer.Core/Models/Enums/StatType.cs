@@ -13,7 +13,7 @@ public enum StatType
     CouplingBetweenObjects,
     
     /// <summary>
-    /// FanIn
+    /// Ca
     /// </summary>
     AfferentCoupling,
     

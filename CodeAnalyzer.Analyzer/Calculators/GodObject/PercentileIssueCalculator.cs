@@ -13,7 +13,7 @@ internal sealed class PercentileIssueCalculator(List<ClassModel> allClassModels)
     private const double WEIGHT_WMPC = 0.4;
     private const double WEIGHT_TCC = 0.4;
     private const double WEIGHT_CBO = 0.2;
-    private const double WEIGHT_FAN_IN = 0.2;
+    private const double WEIGHT_CA = 0.2;
 
     private double _score;
 
@@ -29,7 +29,7 @@ internal sealed class PercentileIssueCalculator(List<ClassModel> allClassModels)
             WmpcP90 = percentileCalculator.GetPercentile(StatType.WeightedMethodsPerClass,0.9),
             TccP10 = percentileCalculator.GetPercentile(StatType.TightClassCohesion,0.1),
             CboP90 = percentileCalculator.GetPercentile(StatType.CouplingBetweenObjects,0.9),
-            FanInP90 = percentileCalculator.GetPercentile(StatType.AfferentCoupling,0.9)
+            CaP90 = percentileCalculator.GetPercentile(StatType.AfferentCoupling,0.9)
         };
     }
 
@@ -41,13 +41,13 @@ internal sealed class PercentileIssueCalculator(List<ClassModel> allClassModels)
         bool isWmpcHigh = model.Stats.Wmpc.Wmpc > Thresholds.WmpcP90;
         bool isTccLow = model.Stats.Tcc.Tcc < Thresholds.TccP10;
         bool isCboHigh = model.Stats.Cbo.Cbo > Thresholds.CboP90;
-        bool isFanInHigh = model.Stats.FanIn.FanIn > Thresholds.FanInP90;
+        bool isCaHigh = model.Stats.Ca.Ca > Thresholds.CaP90;
 
         CalcScore(isAtfdHigh, WEIGHT_ATFD);
         CalcScore(isWmpcHigh, WEIGHT_WMPC);
         CalcScore(isTccLow, WEIGHT_TCC);
         CalcScore(isCboHigh, WEIGHT_CBO);
-        CalcScore(isFanInHigh, WEIGHT_FAN_IN);
+        CalcScore(isCaHigh, WEIGHT_CA);
         
         IssueCertainty issueCertainty = _score >= THRESHOLD_PROBLEM
             ? IssueCertainty.Problem
@@ -63,7 +63,7 @@ internal sealed class PercentileIssueCalculator(List<ClassModel> allClassModels)
             IsWmpcHit = isWmpcHigh,
             IsTccHit = isTccLow,
             IsCboHit = isCboHigh,
-            IsFanInHit = isFanInHigh,
+            IsCaHit = isCaHigh,
         };
     }
 

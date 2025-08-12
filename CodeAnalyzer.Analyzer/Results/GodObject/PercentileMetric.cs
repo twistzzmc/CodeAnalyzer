@@ -12,5 +12,5 @@ public sealed class PercentileMetric
     public required bool IsWmpcHit { get; init; }
     public required bool IsTccHit { get; init; }
     public required bool IsCboHit { get; init; }
-    public required bool IsFanInHit { get; init; }
+    public required bool IsCaHit { get; init; }
 }

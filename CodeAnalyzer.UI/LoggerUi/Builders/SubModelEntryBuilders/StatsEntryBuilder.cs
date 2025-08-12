@@ -17,7 +17,7 @@ internal sealed class StatsEntryBuilder : IModelEntryBuilder<Statistics>
             .WithKey(Key)
             .WithChild(BuildCbo(model.IsCboSet, model.Cbo))
             .WithChild(BuildWmpc(model.IsWmpcSet, model.Wmpc))
-            .WithChild(BuildFanIn(model.IsFanInSet, model.FanIn))
+            .WithChild(BuildCa(model.IsCaSet, model.Ca))
             .WithChild(BuildAtfd(model.IsAtfdSet, model.Atfd))
             .WithChild(BuildTcc(model.IsTccSet, model.Tcc))
             .Build();
@@ -35,10 +35,10 @@ internal sealed class StatsEntryBuilder : IModelEntryBuilder<Statistics>
         return new LogEntry($"[{isWmpcSet}] WMPC: {wmpc.Wmpc}");
     }
 
-    private static LogEntry BuildFanIn(bool isFanInSet, FanInDto fanIn)
+    private static LogEntry BuildCa(bool isCaSet, CaDto ca)
     {
-        LogEntry entry = new($"[{isFanInSet}] FanIn: {fanIn.FanIn} ({fanIn.FanInPercentage:0.00}%)");
-        fanIn.ReferencesClassModels.ToList().ForEach(rcm => entry.AddChild(rcm.Identifier.FullName));
+        LogEntry entry = new($"[{isCaSet}] Ca: {ca.Ca} ({ca.CaPercentage:0.00}%)");
+        ca.ReferencesClassModels.ToList().ForEach(rcm => entry.AddChild(rcm.Identifier.FullName));
         return entry;
     }
     

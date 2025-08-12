@@ -13,7 +13,7 @@ internal sealed class ConstantIssueCalculator
             model.Stats.Atfd.Atfd,
             model.Stats.Tcc.Tcc,
             model.Stats.Cbo.Cbo,
-            model.Stats.FanIn.FanIn);
+            model.Stats.Ca.Ca);
         
         IssueCertainty issueCertainty = score >= 80
             ? IssueCertainty.Problem

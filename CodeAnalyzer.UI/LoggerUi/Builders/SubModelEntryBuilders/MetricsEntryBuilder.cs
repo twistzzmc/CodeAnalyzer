@@ -25,7 +25,7 @@ internal sealed class MetricsEntryBuilder
             .WithChildIf(source.IsWmpcHit, "Przekroczono próg WMPC")
             .WithChildIf(source.IsTccHit, "Przekroczono próg TCC")
             .WithChildIf(source.IsCboHit, "Przekroczono próg CBO")
-            .WithChildIf(source.IsFanInHit, "Przekroczono próg FanIn")
+            .WithChildIf(source.IsCaHit, "Przekroczono próg Ca")
             .Build();
     }
 }
