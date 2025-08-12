@@ -3,16 +3,19 @@
              x:Class="CodeAnalyzer.UI.Controls.AnalysisControl">
     <StackPanel Spacing="10">
         <Button x:Name="AnalyzeLoadedFiles"
-                Content="Analizuj wczytane pliki"
+                Content="Parsuj wczytane pliki"
+                Background="LightBlue"
                 Click="AnalyzeLoadedFiles_OnClick" />
 
         <StackPanel Orientation="Horizontal" Spacing="10">
             <Button x:Name="AnalyzeTooLongMethods"
-                    Content="Szukaj zbyt długich metod"
+                    Content="Szukaj zbyt skomplikowanych metod"
+                    Background="LightGreen"
                     Click="AnalyzeTooLongMethods_OnClick" />
 
             <Button x:Name="AnalyzeGodObjects"
                     Content="Szukaj obiektów &quot;Bóg&quot;"
+                    Background="LightGreen"
                     Click="AnalyzeGodObjects_OnClick" />
         </StackPanel>
     </StackPanel>
