@@ -2,6 +2,7 @@ bin/
 obj/
 .idea/
 .vs/
+.sonarqube/
 /packages/
 riderModule.iml
 /_ReSharper.Caches/
